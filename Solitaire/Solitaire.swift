@@ -139,14 +139,76 @@ class Solitaire {
         return nil
     }
     
-    func canDropCard(card : Card, onFoundation i : Int) -> Bool{
-        if (foundation[i].count == 0) {
+    func canDropCard(card : Card, onFoundation i : Int) -> Bool {
+        if foundation[i].isEmpty {
             return card.rank == ACE
         } else {
             let topCard = foundation[i].last!
             return card.suit == topCard.suit && card.rank == topCard.rank + 1
         }
     }
+    
+    func didDropCard(card : Card, onFoundation i : Int) {
+        removeTopCard(card)  // remove card from wherever it came
+        foundation[i].append(card)
+    }
+    
+    func canDropCard(card : Card, onTableau i : Int) -> Bool {
+        if tableau[i].isEmpty {
+            return card.rank == KING
+        } else {
+            let topCard = tableau[i].last!
+            return isCardFaceUp(topCard) && card.rank == topCard.rank - 1 && card.isSameColor(topCard)
+        }
+    }
+    
+    func didDropCard(card : Card, onTableau i : Int) {
+        removeTopCard(card)  // remove card from wherever it came
+        tableau[i].append(card)
+    }
+    
+    func canDropFan(cards : [Card], onTableau i : Int) -> Bool {
+        let card = cards[0]
+        return canDropCard(card, onTableau: i)
+    }
+    
+    func didDropFan(cards : [Card], onTableau i : Int) {
+        
+    }
+    
+    //
+    // Find card that is known to be on the top of either
+    // the waste, a foundation stack , or a tableaux and remove it.
+    // We return the card stack it was removed from (for potential undo).
+    //
+    private func removeTopCard(card : Card) -> [Card]? {
+        if card == waste.last {
+            waste.popLast()
+            return waste
+        }
+        for i in 0 ..< 4 {
+            if card == foundation[i].last {
+                foundation[i].popLast()
+                return foundation[i]
+            }
+        }
+        for i in 0 ..< 7 {
+            if card == tableau[i].last {
+                tableau[i].popLast()
+                return tableau[i]
+            }
+        }
+        return nil // this should not happen
+    }
+    
+    private func removeTopCards(cards : [Card]) -> [Card]? {
+        let card = cards[0]
+        
+        // XXX
+        
+        return nil  // this should not happen
+    }
+    
 }
 
 
