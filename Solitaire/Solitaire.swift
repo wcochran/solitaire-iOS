@@ -173,7 +173,61 @@ class Solitaire {
     }
     
     func didDropFan(cards : [Card], onTableau i : Int) {
-        
+        removeTopCards(cards)  // remove fan of cards from whereever it came
+        tableau[i] += cards
+    }
+    
+    func canFlipCard(card : Card) -> Bool {
+        if isCardFaceUp(card) {
+            return false
+        } else {
+            for i in 0 ..< 7 {
+                let topCard = tableau[i].last
+                if card == topCard {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    
+    func didFlipCard(card : Card) {
+        faceUpCards.insert(card)
+    }
+    
+    func canDealCard() -> Bool {
+        return stock.count > 0
+    }
+    
+    func didDealCard() {
+        let card = stock.popLast()!
+        waste.append(card)
+        faceUpCards.insert(card)
+    }
+    
+    //
+    // Deal 0 to num cards from stock to waste.
+    // Returns cards actually dealt (so view can animate them).
+    //
+    func dealCards(num : Int) -> [Card] {
+        var cards : [Card] = []
+        let max = min(stock.count, num)
+        for _ in 0 ..< max {
+            let card = stock.popLast()!
+            faceUpCards.insert(card)
+            cards.append(card)
+            waste.append(card)
+        }
+        return cards
+    }
+    
+    func gameWon() -> Bool {
+        for i in 0 ..< 4 {
+            if foundation[i].count != 13 {
+                return false
+            }
+        }
+        return true
     }
     
     //
@@ -201,10 +255,29 @@ class Solitaire {
         return nil // this should not happen
     }
     
+    //
+    // Same as removeTopCard, except now we may be moving more than one card.
+    //
     private func removeTopCards(cards : [Card]) -> [Card]? {
         let card = cards[0]
         
-        // XXX
+        if card == waste.last {
+            waste.removeLast(cards.count)  // count should be 1 in this case
+            return waste
+        }
+        
+        for i in 0 ..< 4 {
+            if card == foundation[i].last {
+                foundation[i].removeLast(cards.count)
+                return foundation[i]
+            }
+        }
+        for i in 0 ..< 7 {
+            if card == tableau[i].last {
+                tableau[i].removeLast(cards.count)
+                return tableau[i]
+            }
+        }
         
         return nil  // this should not happen
     }
