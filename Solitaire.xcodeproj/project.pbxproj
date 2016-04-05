@@ -16,6 +16,7 @@
 		55263CBA1CB1892C0075670D /* SolitaireUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55263CB91CB1892C0075670D /* SolitaireUITests.swift */; };
 		55263CC81CB189680075670D /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55263CC71CB189680075670D /* Card.swift */; };
 		55263CCA1CB194840075670D /* Solitaire.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55263CC91CB194840075670D /* Solitaire.swift */; };
+		5582F6E31CB324E400073A75 /* CardLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5582F6E21CB324E400073A75 /* CardLayer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 		55263CBB1CB1892C0075670D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		55263CC71CB189680075670D /* Card.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Card.swift; sourceTree = "<group>"; };
 		55263CC91CB194840075670D /* Solitaire.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solitaire.swift; sourceTree = "<group>"; };
+		5582F6E21CB324E400073A75 /* CardLayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CardLayer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +106,7 @@
 				55263C991CB1892C0075670D /* AppDelegate.swift */,
 				55263C9B1CB1892C0075670D /* ViewController.swift */,
 				55263CC71CB189680075670D /* Card.swift */,
+				5582F6E21CB324E400073A75 /* CardLayer.swift */,
 				55263CC91CB194840075670D /* Solitaire.swift */,
 				55263C9D1CB1892C0075670D /* Main.storyboard */,
 				55263CA01CB1892C0075670D /* Assets.xcassets */,
@@ -266,6 +269,7 @@
 				55263CC81CB189680075670D /* Card.swift in Sources */,
 				55263CCA1CB194840075670D /* Solitaire.swift in Sources */,
 				55263C9A1CB1892C0075670D /* AppDelegate.swift in Sources */,
+				5582F6E31CB324E400073A75 /* CardLayer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -492,6 +496,7 @@
 				55263CC01CB1892C0075670D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		55263CC11CB1892C0075670D /* Build configuration list for PBXNativeTarget "SolitaireTests" */ = {
 			isa = XCConfigurationList;
@@ -500,6 +505,7 @@
 				55263CC31CB1892C0075670D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		55263CC41CB1892C0075670D /* Build configuration list for PBXNativeTarget "SolitaireUITests" */ = {
 			isa = XCConfigurationList;
@@ -508,6 +514,7 @@
 				55263CC61CB1892C0075670D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

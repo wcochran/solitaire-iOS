@@ -30,7 +30,7 @@ struct Card : Hashable {
     let rank : UInt8 // 1 .. 13
     
     var hashValue: Int {
-        return Int(suit.rawValue*14 + rank)
+        return Int(suit.rawValue*13 + rank - 1)
     }
     
     init(suit s : Suit, rank r : UInt8) {
