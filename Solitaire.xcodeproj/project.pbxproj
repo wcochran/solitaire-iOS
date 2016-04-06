@@ -17,6 +17,8 @@
 		55263CC81CB189680075670D /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55263CC71CB189680075670D /* Card.swift */; };
 		55263CCA1CB194840075670D /* Solitaire.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55263CC91CB194840075670D /* Solitaire.swift */; };
 		557DA6BC1CB4A48500A7462F /* 150 in Resources */ = {isa = PBXBuildFile; fileRef = 557DA6BB1CB4A48500A7462F /* 150 */; };
+		557DA6BE1CB4AAAD00A7462F /* SolitaireView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 557DA6BD1CB4AAAD00A7462F /* SolitaireView.swift */; };
+		557DA6C01CB4AAE200A7462F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 557DA6BF1CB4AAE200A7462F /* QuartzCore.framework */; };
 		5582F6E31CB324E400073A75 /* CardLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5582F6E21CB324E400073A75 /* CardLayer.swift */; };
 /* End PBXBuildFile section */
 
@@ -54,6 +56,8 @@
 		55263CC71CB189680075670D /* Card.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Card.swift; sourceTree = "<group>"; };
 		55263CC91CB194840075670D /* Solitaire.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solitaire.swift; sourceTree = "<group>"; };
 		557DA6BB1CB4A48500A7462F /* 150 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = 150; sourceTree = "<group>"; };
+		557DA6BD1CB4AAAD00A7462F /* SolitaireView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SolitaireView.swift; sourceTree = "<group>"; };
+		557DA6BF1CB4AAE200A7462F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		5582F6E21CB324E400073A75 /* CardLayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CardLayer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -62,6 +66,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				557DA6C01CB4AAE200A7462F /* QuartzCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,6 +90,7 @@
 		55263C8D1CB1892C0075670D = {
 			isa = PBXGroup;
 			children = (
+				557DA6BF1CB4AAE200A7462F /* QuartzCore.framework */,
 				557DA6BA1CB4A47500A7462F /* Cards */,
 				55263C981CB1892C0075670D /* Solitaire */,
 				55263CAD1CB1892C0075670D /* SolitaireTests */,
@@ -108,6 +114,7 @@
 			children = (
 				55263C991CB1892C0075670D /* AppDelegate.swift */,
 				55263C9B1CB1892C0075670D /* ViewController.swift */,
+				557DA6BD1CB4AAAD00A7462F /* SolitaireView.swift */,
 				55263CC71CB189680075670D /* Card.swift */,
 				5582F6E21CB324E400073A75 /* CardLayer.swift */,
 				55263CC91CB194840075670D /* Solitaire.swift */,
@@ -282,6 +289,7 @@
 				55263CCA1CB194840075670D /* Solitaire.swift in Sources */,
 				55263C9A1CB1892C0075670D /* AppDelegate.swift in Sources */,
 				5582F6E31CB324E400073A75 /* CardLayer.swift in Sources */,
+				557DA6BE1CB4AAAD00A7462F /* SolitaireView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

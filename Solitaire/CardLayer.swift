@@ -15,8 +15,8 @@ func imageForCard(card : Card) -> UIImage {
     let ranks = [
         "", "a", "2", "3", "4", "5", "6", "7", "8", "9", "10", "j", "q", "k"
     ]
-    let imageName = "\(suits[Int(card.suit.rawValue)])-\(ranks[Int(card.rank)])-150.png"
-    let image = UIImage(named: imageName)!
+    let imageName = "150/\(suits[Int(card.suit.rawValue)])-\(ranks[Int(card.rank)])-150.png"
+    let image = UIImage(named: imageName, inBundle: nil, compatibleWithTraitCollection: nil)!
     return image
 }
 
@@ -31,7 +31,7 @@ class CardLayer: CALayer {
         }
     }
     let frontImage : UIImage
-    static let backImage = UIImage(named: "back-blue-150-1.png")
+    static let backImage = UIImage(named: "150/back-blue-150-1.png", inBundle: nil, compatibleWithTraitCollection: nil)
     
     init(card : Card) {
         self.card = card
