@@ -43,6 +43,27 @@ class CardLayer: CALayer {
     }
     
     //
+    // This initializer is used to create shadow copies of layers, 
+    // for example, for the presentationLayer method.
+    // See the docs:
+    //  https://developer.apple.com/library/mac/documentation/GraphicsImaging/Reference/CALayer_class/#//apple_ref/occ/instm/CALayer/initWithLayer:
+    //
+    override init(layer: AnyObject) {
+        if let layer = layer as? CardLayer {
+            card = layer.card
+            faceUp = layer.faceUp
+            frontImage = layer.frontImage
+        } else {
+            card = Card(suit: Suit.SPADES, rank: ACE)
+            faceUp = true
+            frontImage = imageForCard(card)
+        }
+        super.init(layer: layer)
+        self.contents = frontImage.CGImage
+        self.contentsGravity = kCAGravityResizeAspect
+    }
+    
+    //
     // This is only needed when a CardLayer is deserialized
     // out of a NIB, which should never happen in this app.
     // http://www.edwardhuynh.com/blog/2015/02/16/swift-initializer-confusion/

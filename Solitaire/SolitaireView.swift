@@ -9,6 +9,7 @@
 import UIKit
 
 let CARDASPECT : CGFloat = 150.0/215.0
+let FAN_OFFSET : CGFloat = 0.15
 
 class SolitaireView: UIView {
 
@@ -18,7 +19,7 @@ class SolitaireView: UIView {
     var tableauLayers : [CALayer]!
     
     var topZPosition : CGFloat = 0
-    var cardToLayerDictionary : [Card : CALayer]!
+    var cardToLayerDictionary : [Card : CardLayer]!
     
     var draggingCardLayer : CardLayer? = nil // card layer dragged (nil => no drag)
     var draggingFan : [CardLayer]? = nil  // fan of cards dragged
@@ -103,7 +104,54 @@ class SolitaireView: UIView {
             x += cardSpacing + cardWidth
         }
         
-        // XXX layout cards
+        layoutCards()
+    }
+    
+    func layoutCards() {
+        var z : CGFloat = 1.0
+        
+        let stock = solitaire.stock
+        for card in stock {
+            let cardLayer = cardToLayerDictionary[card]!
+            cardLayer.frame = stockLayer.frame
+            cardLayer.faceUp = solitaire.isCardFaceUp(card)
+            cardLayer.zPosition = z++
+        }
+        
+        let waste = solitaire.waste
+        for card in waste {
+            let cardLayer = cardToLayerDictionary[card]!
+            cardLayer.frame = wasteLayer.frame
+            cardLayer.faceUp = solitaire.isCardFaceUp(card)
+            cardLayer.zPosition = z++
+        }
+        
+        for i in 0 ..< 4 {
+            let foundation = solitaire.foundation[i]
+            for card in foundation {
+                let cardLayer = cardToLayerDictionary[card]!
+                cardLayer.frame = foundationLayers[i].frame
+                cardLayer.faceUp = solitaire.isCardFaceUp(card)
+                cardLayer.zPosition = z++
+            }
+        }
+        
+        let cardSize = stockLayer.bounds.size
+        let fanOffset = FAN_OFFSET * cardSize.height
+        for i in 0 ..< 7 {
+            let tableau = solitaire.tableau[i]
+            let tableauOrigin = tableauLayers[i].frame.origin
+            var j : CGFloat = 0
+            for card in tableau {
+                let cardLayer = cardToLayerDictionary[card]!
+                cardLayer.frame = CGRectMake(tableauOrigin.x, tableauOrigin.y + j*fanOffset, cardSize.width, cardSize.height)
+                cardLayer.faceUp = solitaire.isCardFaceUp(card)
+                cardLayer.zPosition = z++
+                j++
+            }
+        }
+        
+        topZPosition = z
     }
     
     override func layoutSublayersOfLayer(layer: CALayer) {
