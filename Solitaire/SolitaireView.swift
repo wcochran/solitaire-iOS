@@ -22,7 +22,7 @@ class SolitaireView: UIView {
     var cardToLayerDictionary : [Card : CardLayer]!
     
     var draggingCardLayer : CardLayer? = nil // card layer dragged (nil => no drag)
-    var draggingFan : ArraySlice<Card>? = nil  // fan of cards dragged
+    var draggingFan : [Card]? = nil  // fan of cards dragged
     var touchStartPoint : CGPoint = CGPointZero
     var touchStartLayerPosition : CGPoint = CGPointZero
     
@@ -181,7 +181,7 @@ class SolitaireView: UIView {
             let off = FAN_OFFSET*draggingCardLayer!.bounds.size.height
             let n = draggingFan.count
             for i in 1 ..< n {
-                let card = draggingFan[draggingFan.startIndex + i]
+                let card = draggingFan[i]
                 let cardLayer = cardToLayerDictionary[card]!
                 cardLayer.position = CGPointMake(position.x, position.y + CGFloat(i)*off)
             }
@@ -239,7 +239,7 @@ class SolitaireView: UIView {
                     draggingFan = solitaire.fanBeginningWithCard(card)
                     if let draggingFan = draggingFan {
                         for i in 1 ..< draggingFan.count {
-                            let card = draggingFan[draggingFan.startIndex + i]
+                            let card = draggingFan[i]
                             let clayer = cardToLayerDictionary[card]!
                             moveCardLayerToTop(clayer)
                         }
@@ -339,44 +339,44 @@ class SolitaireView: UIView {
                         return // done
                     }
                 }
-                
-                //
-                // Drop fan of cards on tableau?
-                //
-                if let fan = draggingFan {
-                    for i in 0 ..< 7 {
-                        let topCard = solitaire.tableau[i].isEmpty ? nil : solitaire.tableau[i].last
-                        var topCardLayer : CardLayer? = nil
-                        var targetFrame : CGRect
-                        if let topCard = topCard {
-                            topCardLayer = cardToLayerDictionary[topCard]
-                            targetFrame = topCardLayer!.frame
+            }  // end numCards == 1
+            
+            //
+            // Drop fan of cards on tableau?
+            //
+            if let fan = draggingFan {
+                for i in 0 ..< 7 {
+                    let topCard = solitaire.tableau[i].isEmpty ? nil : solitaire.tableau[i].last
+                    var topCardLayer : CardLayer? = nil
+                    var targetFrame : CGRect
+                    if let topCard = topCard {
+                        topCardLayer = cardToLayerDictionary[topCard]
+                        targetFrame = topCardLayer!.frame
+                    } else {
+                        targetFrame = tableauLayers[i].frame
+                    }
+                    if CGRectIntersectsRect(dragLayer.frame, targetFrame) && solitaire.canDropFan(fan, onTableau: i) {
+                        let position : CGPoint
+                        if topCard != nil {
+                            let cardSize = targetFrame.size
+                            let fanOffset = FAN_OFFSET*cardSize.height
+                            position = CGPointMake(topCardLayer!.position.x, topCardLayer!.position.y + fanOffset)
                         } else {
-                            targetFrame = tableauLayers[i].frame
+                            position = tableauLayers[i].position
                         }
-                        if CGRectIntersectsRect(dragLayer.frame, targetFrame) && solitaire.canDropFan(fan, onTableau: i) {
-                            let position : CGPoint
-                            if topCard != nil {
-                                let cardSize = targetFrame.size
-                                let fanOffset = FAN_OFFSET*cardSize.height
-                                position = CGPointMake(topCardLayer!.position.x, topCardLayer!.position.y + fanOffset)
-                            } else {
-                                position = tableauLayers[i].position
-                            }
-                            dragCardsToPosition(position, animate: true)
-                            solitaire.didDropFan(fan, onTableau: i)
-                            draggingCardLayer = nil
-                            return // done
-                        }
+                        dragCardsToPosition(position, animate: true)
+                        solitaire.didDropFan(fan, onTableau: i)
+                        draggingCardLayer = nil
+                        return // done
                     }
                 }
-                
-                //
-                // Didn't drop any cards ... move 'em back to original position
-                //
-                dragCardsToPosition(touchStartLayerPosition, animate: true)
-                draggingCardLayer = nil
             }
+            
+            //
+            // Didn't drop any cards ... move 'em back to original position
+            //
+            dragCardsToPosition(touchStartLayerPosition, animate: true)
+            draggingCardLayer = nil
         }
     }
 }

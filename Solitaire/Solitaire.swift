@@ -126,13 +126,17 @@ class Solitaire {
         dealCardsFromStockToTableaux()
     }
     
-    func fanBeginningWithCard(card : Card) -> ArraySlice<Card>? {
+    func fanBeginningWithCard(card : Card) -> [Card]? {
         for i in 0 ..< 7 {
             let cards = tableau[i]
             let numCards = cards.count
             for j in 0 ..< numCards {
                 if card == cards[j] {
-                    return cards[j ..< numCards]
+                    var fan : [Card] = []  // could have used ArraySlice
+                    for k in j ..< numCards {  // but they're kinda evil
+                        fan.append(cards[k])
+                    }
+                    return fan
                 }
             }
         }
@@ -167,14 +171,14 @@ class Solitaire {
         tableau[i].append(card)
     }
     
-    func canDropFan(cards : ArraySlice<Card>, onTableau i : Int) -> Bool {
-        if let card = cards.first {  // cards[0] generates runtime error?
+    func canDropFan(cards : [Card], onTableau i : Int) -> Bool {
+        if let card = cards.first {
             return canDropCard(card, onTableau: i)
         }
         return false;
     }
     
-    func didDropFan(cards : ArraySlice<Card>, onTableau i : Int) {
+    func didDropFan(cards : [Card], onTableau i : Int) {
         removeTopCards(cards)  // remove fan of cards from whereever it came
         tableau[i] += cards
     }
@@ -260,7 +264,7 @@ class Solitaire {
     //
     // Same as removeTopCard, except now we may be moving more than one card.
     //
-    private func removeTopCards(cards : ArraySlice<Card>) -> [Card]? {
+    private func removeTopCards(cards : [Card]) -> [Card]? {
         let card = cards[0]
         
         if card == waste.last {
