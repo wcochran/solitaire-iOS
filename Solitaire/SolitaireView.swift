@@ -158,4 +158,35 @@ class SolitaireView: UIView {
         draggingCardLayer = nil // deactivate any dragging
         layoutTableAndCards()
     }
+    
+    func collectAllCardsInStock() {
+        var z : CGFloat = 1
+        for card in cardToLayerDictionary.keys {
+            let cardLayer = cardToLayerDictionary[card]!
+            cardLayer.faceUp = false
+            cardLayer.frame = stockLayer.frame
+            cardLayer.zPosition = z++
+        }
+        draggingCardLayer = nil
+        topZPosition = z
+    }
+    
+    func dragCardsToPosition(position : CGPoint, animate : Bool) {
+        if !animate {
+            CATransaction.begin()
+            CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
+        }
+        draggingCardLayer!.position = position
+        if let draggingFan = draggingFan {
+            let off = FAN_OFFSET*draggingCardLayer!.bounds.size.height
+            let n = draggingFan.count
+            for i in 1 ..< n {
+                let cardLayer = draggingFan[i]
+                cardLayer.position = CGPointMake(position.x, position.y + CGFloat(i)*off)
+            }
+        }
+        if !animate {
+            CATransaction.commit()
+        }
+    }
 }
