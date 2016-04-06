@@ -181,7 +181,7 @@ class SolitaireView: UIView {
             let off = FAN_OFFSET*draggingCardLayer!.bounds.size.height
             let n = draggingFan.count
             for i in 1 ..< n {
-                let card = draggingFan[i]
+                let card = draggingFan[draggingFan.startIndex + i]
                 let cardLayer = cardToLayerDictionary[card]!
                 cardLayer.position = CGPointMake(position.x, position.y + CGFloat(i)*off)
             }
@@ -239,7 +239,7 @@ class SolitaireView: UIView {
                     draggingFan = solitaire.fanBeginningWithCard(card)
                     if let draggingFan = draggingFan {
                         for i in 1 ..< draggingFan.count {
-                            let card = draggingFan[i]
+                            let card = draggingFan[draggingFan.startIndex + i]
                             let clayer = cardToLayerDictionary[card]!
                             moveCardLayerToTop(clayer)
                         }
@@ -299,7 +299,7 @@ class SolitaireView: UIView {
     
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
         if let dragLayer = draggingCardLayer {
-            let numCards = draggingFan?.count
+            let numCards = draggingFan == nil ? 1 : draggingFan!.count
             
             if numCards == 1 { // drop on foundation or tableau
                 
@@ -334,7 +334,7 @@ class SolitaireView: UIView {
                             targetFrame.origin.y += fanOffset
                         }
                         draggingCardLayer!.frame = targetFrame
-                        solitaire.didDropCard(draggingCardLayer!.card, onTableau: i)
+                        solitaire.didDropCard(dragLayer.card, onTableau: i)
                         draggingCardLayer = nil
                         return // done
                     }
