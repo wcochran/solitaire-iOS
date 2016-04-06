@@ -158,7 +158,7 @@ class Solitaire {
             return card.rank == KING
         } else {
             let topCard = tableau[i].last!
-            return isCardFaceUp(topCard) && card.rank == topCard.rank - 1 && card.isSameColor(topCard)
+            return isCardFaceUp(topCard) && card.rank == topCard.rank - 1 && !card.isSameColor(topCard)
         }
     }
     
@@ -168,8 +168,10 @@ class Solitaire {
     }
     
     func canDropFan(cards : ArraySlice<Card>, onTableau i : Int) -> Bool {
-        let card = cards[0]
-        return canDropCard(card, onTableau: i)
+        if let card = cards.first {  // cards[0] generates runtime error?
+            return canDropCard(card, onTableau: i)
+        }
+        return false;
     }
     
     func didDropFan(cards : ArraySlice<Card>, onTableau i : Int) {
