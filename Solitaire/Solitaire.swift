@@ -167,12 +167,12 @@ class Solitaire {
         tableau[i].append(card)
     }
     
-    func canDropFan(cards : [Card], onTableau i : Int) -> Bool {
+    func canDropFan(cards : ArraySlice<Card>, onTableau i : Int) -> Bool {
         let card = cards[0]
         return canDropCard(card, onTableau: i)
     }
     
-    func didDropFan(cards : [Card], onTableau i : Int) {
+    func didDropFan(cards : ArraySlice<Card>, onTableau i : Int) {
         removeTopCards(cards)  // remove fan of cards from whereever it came
         tableau[i] += cards
     }
@@ -258,7 +258,7 @@ class Solitaire {
     //
     // Same as removeTopCard, except now we may be moving more than one card.
     //
-    private func removeTopCards(cards : [Card]) -> [Card]? {
+    private func removeTopCards(cards : ArraySlice<Card>) -> [Card]? {
         let card = cards[0]
         
         if card == waste.last {

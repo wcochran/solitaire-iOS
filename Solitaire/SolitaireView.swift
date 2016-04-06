@@ -22,7 +22,7 @@ class SolitaireView: UIView {
     var cardToLayerDictionary : [Card : CardLayer]!
     
     var draggingCardLayer : CardLayer? = nil // card layer dragged (nil => no drag)
-    var draggingFan : [CardLayer]? = nil  // fan of cards dragged
+    var draggingFan : ArraySlice<Card>? = nil  // fan of cards dragged
     var touchStartPoint : CGPoint = CGPointZero
     var touchStartLayerPosition : CGPoint = CGPointZero
     
@@ -181,12 +181,202 @@ class SolitaireView: UIView {
             let off = FAN_OFFSET*draggingCardLayer!.bounds.size.height
             let n = draggingFan.count
             for i in 1 ..< n {
-                let cardLayer = draggingFan[i]
+                let card = draggingFan[i]
+                let cardLayer = cardToLayerDictionary[card]!
                 cardLayer.position = CGPointMake(position.x, position.y + CGFloat(i)*off)
             }
         }
         if !animate {
             CATransaction.commit()
+        }
+    }
+    
+    func moveCardLayerToTop(cardLayer : CardLayer) {
+        CATransaction.begin()  // do not animate z-position change
+        CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
+        cardLayer.zPosition = topZPosition++
+        CATransaction.commit()
+    }
+    
+    func animateDeal(inout cardLayers : [CardLayer]) {
+        if cardLayers.count > 0 {
+            let cardLayer = cardLayers[0]
+            cardLayers.removeAtIndex(0)
+            
+            moveCardLayerToTop(cardLayer)
+            
+            CATransaction.begin()
+            CATransaction.setCompletionBlock {
+                self.animateDeal(&cardLayers)
+            }
+            CATransaction.setAnimationDuration(0.25)
+            cardLayer.faceUp = true
+            cardLayer.position = wasteLayer.position
+            CATransaction.commit()
+        }
+    }
+    
+    //
+    // Note: the point passed to hitTest: is in the coordinate system of
+    // self.layer.superlayer
+    // http://goo.gl/FIzjZD
+    //
+    
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        let touch = touches.first!
+        let touchPoint = touch.locationInView(self)
+        let hitTestPoint = self.layer.convertPoint(touchPoint, toLayer: self.layer.superlayer)
+        let layer = self.layer.hitTest(hitTestPoint)
+        
+        if let layer = layer {
+            if layer.name == "card" {
+                let cardLayer = layer as! CardLayer
+                let card = cardLayer.card
+                if solitaire.isCardFaceUp(card) {
+                    touchStartPoint = touchPoint
+                    touchStartLayerPosition = cardLayer.position
+                    moveCardLayerToTop(cardLayer)
+                    draggingFan = solitaire.fanBeginningWithCard(card)
+                    if let draggingFan = draggingFan {
+                        for i in 1 ..< draggingFan.count {
+                            let card = draggingFan[i]
+                            let clayer = cardToLayerDictionary[card]!
+                            moveCardLayerToTop(clayer)
+                        }
+                    }
+                    // XXX check for touch.tapCount > 1
+                    draggingCardLayer = cardLayer
+                } else if solitaire.canFlipCard(card) {
+                    cardLayer.faceUp = true
+                    solitaire.didFlipCard(card)
+                } else if solitaire.stock.last == card {
+                    if numberOfCardsToDeal > 1 {
+                        let cards = solitaire.dealCards(numberOfCardsToDeal)
+                        var cardLayers : [CardLayer] = []
+                        for c in cards {
+                            let clayer = cardToLayerDictionary[c]!
+                            cardLayers.append(clayer)
+                        }
+                        animateDeal(&cardLayers)
+                    } else { // deal one card
+                        let cardLayer = cardToLayerDictionary[card]!
+                        moveCardLayerToTop(cardLayer)
+                        cardLayer.position = wasteLayer.position
+                        cardLayer.faceUp = true
+                        solitaire.didDealCard()
+                    }
+                }
+            } else if (layer.name == "stock") {
+                solitaire.collectWasteCardsIntoStock()
+                var z : CGFloat = 1
+                for card in solitaire.stock {
+                    let cardLayer = cardToLayerDictionary[card]!
+                    cardLayer.faceUp = false
+                    cardLayer.frame = stockLayer.frame
+                    cardLayer.zPosition = z++
+                }
+            }
+        }
+    }
+    
+    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if draggingCardLayer != nil {
+            let touch = touches.first!
+            let p = touch.locationInView(self)
+            let delta = CGPointMake(p.x - touchStartPoint.x, p.y - touchStartPoint.y)
+            let position = CGPointMake(touchStartLayerPosition.x + delta.x,
+                                       touchStartLayerPosition.y + delta.y)
+            dragCardsToPosition(position, animate: false)
+        }
+    }
+    
+    override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+        if draggingCardLayer != nil {
+            dragCardsToPosition(touchStartLayerPosition, animate: true)
+            draggingCardLayer = nil
+        }
+    }
+    
+    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if let dragLayer = draggingCardLayer {
+            let numCards = draggingFan?.count
+            
+            if numCards == 1 { // drop on foundation or tableau
+                
+                //
+                // Drop card on foundation?
+                //
+                for i in 0 ..< 4 {
+                    if CGRectIntersectsRect(dragLayer.frame, foundationLayers[i].frame) && solitaire.canDropCard(dragLayer.card, onFoundation: i) {
+                        draggingCardLayer!.frame = foundationLayers[i].frame
+                        solitaire.didDropCard(dragLayer.card, onFoundation: i)
+                        draggingCardLayer = nil
+                        return // done
+                    }
+                }
+                
+                //
+                // Drop card on tableau?
+                //
+                for i in 0 ..< 7 {
+                    let topCard = solitaire.tableau[i].isEmpty ? nil : solitaire.tableau[i].last
+                    var targetFrame : CGRect
+                    if let topCard = topCard {
+                        let topCardLayer = cardToLayerDictionary[topCard]!
+                        targetFrame = topCardLayer.frame
+                    } else {
+                        targetFrame = tableauLayers[i].frame
+                    }
+                    if CGRectIntersectsRect(dragLayer.frame, targetFrame) && solitaire.canDropCard(dragLayer.card, onTableau: i) {
+                        if topCard != nil {
+                            let cardSize = targetFrame.size
+                            let fanOffset = FAN_OFFSET*cardSize.height
+                            targetFrame.origin.y += fanOffset
+                        }
+                        draggingCardLayer!.frame = targetFrame
+                        solitaire.didDropCard(draggingCardLayer!.card, onTableau: i)
+                        draggingCardLayer = nil
+                        return // done
+                    }
+                }
+                
+                //
+                // Drop fan of cards on tableau?
+                //
+                if let fan = draggingFan {
+                    for i in 0 ..< 7 {
+                        let topCard = solitaire.tableau[i].isEmpty ? nil : solitaire.tableau[i].last
+                        var topCardLayer : CardLayer? = nil
+                        var targetFrame : CGRect
+                        if let topCard = topCard {
+                            topCardLayer = cardToLayerDictionary[topCard]
+                            targetFrame = topCardLayer!.frame
+                        } else {
+                            targetFrame = tableauLayers[i].frame
+                        }
+                        if CGRectIntersectsRect(dragLayer.frame, targetFrame) && solitaire.canDropFan(fan, onTableau: i) {
+                            let position : CGPoint
+                            if topCard != nil {
+                                let cardSize = targetFrame.size
+                                let fanOffset = FAN_OFFSET*cardSize.height
+                                position = CGPointMake(topCardLayer!.position.x, topCardLayer!.position.y + fanOffset)
+                            } else {
+                                position = tableauLayers[i].position
+                            }
+                            dragCardsToPosition(position, animate: true)
+                            solitaire.didDropFan(fan, onTableau: i)
+                            draggingCardLayer = nil
+                            return // done
+                        }
+                    }
+                }
+                
+                //
+                // Didn't drop any cards ... move 'em back to original position
+                //
+                dragCardsToPosition(touchStartLayerPosition, animate: true)
+                draggingCardLayer = nil
+            }
         }
     }
 }
