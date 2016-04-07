@@ -244,7 +244,22 @@ class SolitaireView: UIView {
                             moveCardLayerToTop(clayer)
                         }
                     }
-                    // XXX check for touch.tapCount > 1
+                    
+                    if touch.tapCount > 1 {
+                        if draggingFan == nil || draggingFan!.count <= 1 {
+                            for i in 0 ..< 4 {
+                                if solitaire.canDropCard(card, onFoundation: i) {
+                                    cardLayer.zPosition = topZPosition++
+                                    cardLayer.position = foundationLayers[i].position
+                                    solitaire.didDropCard(card, onFoundation: i)
+                                    solitaire.dump() // XXXX
+                                    break;
+                                }
+                            }
+                        }
+                        return
+                    }
+                    
                     draggingCardLayer = cardLayer
                 } else if solitaire.canFlipCard(card) {
                     cardLayer.faceUp = true
