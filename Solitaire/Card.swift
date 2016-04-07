@@ -15,11 +15,17 @@ enum Suit : UInt8 {
     case HEARTS = 3
 }
 
+
 let ACE   : UInt8 = 1
 let JACK  : UInt8 = 11
 let QUEEN : UInt8 = 12
 let KING  : UInt8 = 13
 
+let suitStrings = ["♠︎", "♣︎", "♦︎", "♥︎"]
+let rankStrings = [
+    "", "A", "2", "3", "4", "5", "6", "7",
+    "8", "9", "10", "J", "Q", "K"
+]
 
 func ==(left: Card, right: Card) -> Bool {
     return left.suit == right.suit && left.rank == right.rank
@@ -28,6 +34,10 @@ func ==(left: Card, right: Card) -> Bool {
 struct Card : Hashable {
     let suit : Suit
     let rank : UInt8 // 1 .. 13
+    
+    var description : String {
+        return rankStrings[Int(rank)] + suitStrings[Int(suit.rawValue)]
+    }
     
     var hashValue: Int {
         return Int(suit.rawValue*13 + rank - 1)

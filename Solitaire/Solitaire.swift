@@ -236,6 +236,26 @@ class Solitaire {
         return true
     }
     
+    func dump() {  // dump state of model to console (for diagnostics)
+        print("=================")
+        print("stock:")
+        stock.forEach {card in print(card.description + ", ", terminator:"")}
+        print()
+        print("waste:")
+        waste.forEach {card in print(card.description + ", ", terminator:"")}
+        print()
+        for (i, cards) in foundation.enumerate() {
+            print("foundation[\(i)]:")
+            cards.forEach {card in print(card.description + ", ", terminator:"")}
+            print()
+        }
+        for (i, cards) in tableau.enumerate() {
+            print("tableau[\(i)]:")
+            cards.forEach {card in print(card.description + ", ", terminator:"")}
+            print()
+        }
+    }
+    
     //
     // Find card that is known to be on the top of either
     // the waste, a foundation stack , or a tableaux and remove it.
@@ -265,7 +285,7 @@ class Solitaire {
     // Same as removeTopCard, except now we may be moving more than one card.
     //
     private func removeTopCards(cards : [Card]) -> [Card]? {
-        let card = cards[0]
+        let card = cards.last
         
         if card == waste.last {
             waste.removeLast(cards.count)  // count should be 1 in this case
