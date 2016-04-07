@@ -8,6 +8,12 @@
 
 import UIKit
 
+func sandboxArchivePath() -> String {
+    let dir : NSString = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true).first!
+    let path = dir.stringByAppendingPathComponent("solitaire.plist")
+    return path
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -18,8 +24,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
         
-        solitaire = Solitaire()   // XXX add persistant storage
-        solitaire.freshGame()
+        let archiveName = sandboxArchivePath()
+        if NSFileManager.defaultManager().fileExistsAtPath(archiveName) {
+            let dict = NSDictionary(contentsOfFile: archiveName) as! [String : AnyObject]
+            solitaire = Solitaire(dictionary: dict)
+        } else {
+            solitaire = Solitaire()
+            solitaire.freshGame()
+        }
         
         return true
     }
@@ -32,6 +44,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+        
+        let archiveName = sandboxArchivePath()
+        let dict : NSDictionary = solitaire.toDictionary()
+        dict.writeToFile(archiveName, atomically: true)
     }
 
     func applicationWillEnterForeground(application: UIApplication) {

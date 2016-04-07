@@ -49,8 +49,8 @@ struct Card : Hashable {
     }
     
     init(dictionary dict : [String : AnyObject]) { // to retrieve from plist
-        suit = Suit(rawValue: dict["suit"] as! UInt8)!
-        rank = dict["rank"] as! UInt8
+        suit = Suit(rawValue: (dict["suit"] as! NSNumber).unsignedCharValue)!
+        rank = (dict["rank"] as! NSNumber).unsignedCharValue
     }
     
     func toDictionary() -> [String : AnyObject] { // to store in plist
