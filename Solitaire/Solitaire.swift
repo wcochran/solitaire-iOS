@@ -96,6 +96,14 @@ class Solitaire {
         }
     }
     
+    func undoCollectWasteCardsIntoStock() {
+        while !stock.isEmpty {
+            let card = stock.popLast()!
+            faceUpCards.insert(card)
+            waste.append(card)
+        }
+    }
+    
     func shuffeStock(numShuffles num : Int) {
         let n = stock.count
             for _ in 1 ... num {
@@ -115,7 +123,6 @@ class Solitaire {
                 if i == j {
                     faceUpCards.insert(card) // last card is face up
                 }
-                
             }
         }
     }

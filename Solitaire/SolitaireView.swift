@@ -252,7 +252,7 @@ class SolitaireView: UIView {
                                     cardLayer.zPosition = topZPosition++
                                     cardLayer.position = foundationLayers[i].position
                                     solitaire.didDropCard(card, onFoundation: i)
-                                    solitaire.dump() // XXXX
+                                    // solitaire.dump() // XXXX
                                     break;
                                 }
                             }
@@ -326,7 +326,7 @@ class SolitaireView: UIView {
                         draggingCardLayer!.frame = foundationLayers[i].frame
                         solitaire.didDropCard(dragLayer.card, onFoundation: i)
                         draggingCardLayer = nil
-                        solitaire.dump() // XXXX
+                        // solitaire.dump() // XXXX
                         return // done
                     }
                 }
@@ -352,7 +352,7 @@ class SolitaireView: UIView {
                         draggingCardLayer!.frame = targetFrame
                         solitaire.didDropCard(dragLayer.card, onTableau: i)
                         draggingCardLayer = nil
-                        solitaire.dump() // XXXX
+                        // solitaire.dump() // XXXX
                         return // done
                     }
                 }
@@ -384,7 +384,7 @@ class SolitaireView: UIView {
                         dragCardsToPosition(position, animate: true)
                         solitaire.didDropFan(fan, onTableau: i)
                         draggingCardLayer = nil
-                        solitaire.dump() // XXXX
+                        // solitaire.dump() // XXXX
                         return // done
                     }
                 }
@@ -395,7 +395,7 @@ class SolitaireView: UIView {
             //
             dragCardsToPosition(touchStartLayerPosition, animate: true)
             draggingCardLayer = nil
-            solitaire.dump() // XXXX
+            // solitaire.dump() // XXXX
         }
     }
 }
