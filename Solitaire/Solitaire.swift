@@ -159,9 +159,13 @@ class Solitaire {
         }
     }
     
-    func didDropCard(card : Card, onFoundation i : Int) {
-        removeTopCard(card)  // remove card from wherever it came
+    //
+    // Return stack that card came from (for undo information)
+    //
+    func didDropCard(card : Card, onFoundation i : Int) -> [Card] {
+        let sourceStack = removeTopCard(card)  // remove card from wherever it came
         foundation[i].append(card)
+        return sourceStack!
     }
     
     func canDropCard(card : Card, onTableau i : Int) -> Bool {
@@ -172,10 +176,21 @@ class Solitaire {
             return isCardFaceUp(topCard) && card.rank == topCard.rank - 1 && !card.isSameColor(topCard)
         }
     }
-    
-    func didDropCard(card : Card, onTableau i : Int) {
-        removeTopCard(card)  // remove card from wherever it came
+ 
+    //
+    // Return stack that card came from (for undo information)
+    //
+    func didDropCard(card : Card, onTableau i : Int) -> [Card] {
+        let sourceStack = removeTopCard(card)  // remove card from wherever it came
         tableau[i].append(card)
+        return sourceStack!
+    }
+    
+    func undoDidDropCard(card : Card,
+                         inout byMovingItFromStack source : [Card],
+                         inout toStack dest : [Card]) {
+        dest.append(card)
+        source.popLast()
     }
     
     func canDropFan(cards : [Card], onTableau i : Int) -> Bool {
@@ -185,9 +200,20 @@ class Solitaire {
         return false;
     }
     
-    func didDropFan(cards : [Card], onTableau i : Int) {
-        removeTopCards(cards)  // remove fan of cards from whereever it came
+    //
+    // Return stack that card came from (for undo information)
+    //
+    func didDropFan(cards : [Card], onTableau i : Int) -> [Card]{
+        let sourceStack = removeTopCards(cards)  // remove fan from whereever it came
         tableau[i] += cards
+        return sourceStack!
+    }
+    
+    func undoDropFan(cards : [Card],
+                     inout byMovingItFromStack source : [Card],
+                     inout toStack dest : [Card]) {
+        source.removeLast(cards.count)
+        dest += cards
     }
     
     func canFlipCard(card : Card) -> Bool {
@@ -218,9 +244,16 @@ class Solitaire {
         faceUpCards.insert(card)
     }
     
+    func undoDealCard() {
+        let card = waste.popLast()!
+        faceUpCards.remove(card)
+        stock.append(card)
+    }
+    
     //
     // Deal 0 to num cards from stock to waste.
-    // Returns cards actually dealt (so view can animate them).
+    // Returns cards actually dealt (so view can animate them, and
+    // we home many cards were dealt for an undo).
     //
     func dealCards(num : Int) -> [Card] {
         var cards : [Card] = []
@@ -232,6 +265,14 @@ class Solitaire {
             waste.append(card)
         }
         return cards
+    }
+    
+    func undoDealCards(num : Int) {
+        for _ in 0 ..< num {
+            let card = waste.popLast()!
+            faceUpCards.remove(card)
+            stock.append(card)
+        }
     }
     
     func gameWon() -> Bool {
