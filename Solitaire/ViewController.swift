@@ -10,6 +10,8 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    @IBOutlet weak var solitaireView: SolitaireView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -20,6 +22,17 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
+    @IBAction func redeal(sender: AnyObject) {
+        let alert = UIAlertController(title: "New Game?", message: "Redeal cards?", preferredStyle: .Alert)
+        alert.addAction(UIAlertAction(title: "Redeal", style: .Destructive, handler: { action in
+            let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+            appDelegate.solitaire.freshGame()
+            self.solitaireView.collectAllCardsInStock()
+            self.solitaireView.layoutCards()
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+        presentViewController(alert, animated: true, completion: nil)
+    }
 
 }
 
