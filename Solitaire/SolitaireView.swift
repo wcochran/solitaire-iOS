@@ -73,6 +73,12 @@ class SolitaireView: UIView {
             self.layer.addSublayer(cardLayer)
             cardToLayerDictionary[card] = cardLayer
         }
+        
+        becomeFirstResponder() // for shake -> triggers undo
+    }
+    
+    override func canBecomeFirstResponder() -> Bool {
+        return true // for shake -> triggers undo
     }
     
     func layoutTableAndCards() {
@@ -276,12 +282,30 @@ class SolitaireView: UIView {
                             cardLayers.append(clayer)
                         }
                         animateDeal(&cardLayers)
+                        
+                        // XXX undo in progress...
+                        undoManager?.registerUndoWithTarget(self, handler: { _ in
+                            self.solitaire.undoDealCards(cards.count)
+                            self.layoutCards()
+                            self.undoManager?.registerUndoWithTarget(self, handler: { _ in
+                                self.solitaire.dealCards(self.numberOfCardsToDeal)
+                                self.layoutCards()
+                            })
+                            self.undoManager?.setActionName(" XXX deal cards")
+                        })
+                        undoManager?.setActionName("deal cards")
+                        
                     } else { // deal one card
                         let cardLayer = cardToLayerDictionary[card]!
                         moveCardLayerToTop(cardLayer)
                         cardLayer.position = wasteLayer.position
                         cardLayer.faceUp = true
                         solitaire.didDealCard()
+                        undoManager?.registerUndoWithTarget(self, handler: { _ in
+                            self.solitaire.undoDealCard()
+                            self.layoutCards()
+                        })
+                        undoManager?.setActionName("deal card")
                     }
                 }
             } else if (layer.name == "stock") {
