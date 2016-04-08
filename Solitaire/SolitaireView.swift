@@ -222,6 +222,128 @@ class SolitaireView: UIView {
         }
     }
     
+    func multiCardDeal() {
+        let cards = solitaire.dealCards(numberOfCardsToDeal)
+        
+        undoManager?.registerUndoWithTarget(self, handler: { me in
+            me.undoMultiCard(cards)
+        })
+        undoManager?.setActionName("deal cards")
+        
+        var cardLayers : [CardLayer] = []
+        for c in cards {
+            let clayer = cardToLayerDictionary[c]!
+            cardLayers.append(clayer)
+        }
+        animateDeal(&cardLayers)
+    }
+    
+    func undoMultiCard(cards : [Card]) {
+        undoManager?.registerUndoWithTarget(self, handler: { me in
+            me.multiCardDeal()
+        })
+        undoManager?.setActionName("deal cards")
+        
+        self.solitaire.undoDealCards(cards.count)
+        self.layoutCards()
+    }
+    
+    func oneCardDeal() {
+        undoManager?.registerUndoWithTarget(self, handler: {me in
+            me.undoOneCardDeal()
+        })
+        undoManager?.setActionName("deal card")
+        
+        let card = solitaire.stock.last!
+        let cardLayer = cardToLayerDictionary[card]!
+        moveCardLayerToTop(cardLayer)
+        cardLayer.position = wasteLayer.position
+        cardLayer.faceUp = true
+        solitaire.didDealCard()
+    }
+    
+    func undoOneCardDeal() {
+        undoManager?.registerUndoWithTarget(self, handler: {me in
+            me.oneCardDeal()
+        })
+        undoManager?.setActionName("deal card")
+        
+        self.solitaire.undoDealCard()
+        self.layoutCards()
+    }
+    
+    func flipCard(card : Card, faceUp up : Bool) {
+        undoManager?.registerUndoWithTarget(self, handler: {me in
+            me.flipCard(card, faceUp: !up)
+        })
+        undoManager?.setActionName("flip card")
+        
+        let cardLayer = cardToLayerDictionary[card]
+        cardLayer!.faceUp = up
+        if (up) {
+            solitaire.didFlipCard(card)
+        } else {
+            solitaire.undoFlipCard(card)
+        }
+    }
+    
+    func collectWasteCardsIntoStock() {
+        undoManager?.registerUndoWithTarget(self, handler: {me in
+            me.undoCollectWasteCardsIntoStock()
+        })
+        undoManager?.setActionName("collect waste cards")
+        
+        solitaire.collectWasteCardsIntoStock()
+        var z : CGFloat = 1
+        for card in solitaire.stock {
+            let cardLayer = cardToLayerDictionary[card]!
+            cardLayer.faceUp = false
+            cardLayer.frame = stockLayer.frame
+            cardLayer.zPosition = z++
+        }
+    }
+    
+    func undoCollectWasteCardsIntoStock() {
+        undoManager?.registerUndoWithTarget(self, handler: {me in
+            me.collectWasteCardsIntoStock()
+        })
+        undoManager?.setActionName("collect waste cards")
+        
+        solitaire.undoCollectWasteCardsIntoStock()
+        layoutCards() // XXX could do this fancier
+    }
+    
+    //
+    // XXX
+    // The current model for undoing dropping cards on stack
+    // isn't going to work.
+    //
+    
+//    func tryMovingCardToFoundation(card : Card) {
+//        var srcStack : [Card]? = nil
+//        var foundationIndex = 0
+//        for i in 0 ..< 4 {
+//            if solitaire.canDropCard(card, onFoundation: i) {
+//                let cardLayer = cardToLayerDictionary[card]!
+//                cardLayer.zPosition = topZPosition++
+//                cardLayer.position = foundationLayers[i].position
+//                srcStack = solitaire.didDropCard(card, onFoundation: i)
+//                foundationIndex = 0
+//                break;
+//            }
+//        }
+//        if let srcStack = srcStack {
+//            undoManager?.registerUndoWithTarget(self, handler: { me in
+//                me.moveCard(card, fromStack: &srcStack, toFoundation: foundationIndex)
+//            })
+//            undoManager?.setActionName("move card to foundation")
+//        }
+//    }
+    
+    func moveCard(card : Card, inout fromStack src : [Card], toFoundation i : Int) {
+        solitaire.undoDidDropCard(card, byMovingItFromStack: &src, toStack: &solitaire.foundation[i])
+    }
+    
     //
     // Note: the point passed to hitTest: is in the coordinate system of
     // self.layer.superlayer
@@ -261,7 +383,7 @@ class SolitaireView: UIView {
                                     cardLayer.zPosition = topZPosition++
                                     cardLayer.position = foundationLayers[i].position
                                     solitaire.didDropCard(card, onFoundation: i)
-                                    // solitaire.dump() // XXXX
+                                    undoManager?.removeAllActions() // XXX not undoable for now
                                     break;
                                 }
                             }
@@ -271,52 +393,16 @@ class SolitaireView: UIView {
                     
                     draggingCardLayer = cardLayer
                 } else if solitaire.canFlipCard(card) {
-                    cardLayer.faceUp = true
-                    solitaire.didFlipCard(card)
+                    flipCard(card, faceUp: true)
                 } else if solitaire.stock.last == card {
                     if numberOfCardsToDeal > 1 {
-                        let cards = solitaire.dealCards(numberOfCardsToDeal)
-                        var cardLayers : [CardLayer] = []
-                        for c in cards {
-                            let clayer = cardToLayerDictionary[c]!
-                            cardLayers.append(clayer)
-                        }
-                        animateDeal(&cardLayers)
-                        
-                        // XXX undo in progress...
-                        undoManager?.registerUndoWithTarget(self, handler: { _ in
-                            self.solitaire.undoDealCards(cards.count)
-                            self.layoutCards()
-                            self.undoManager?.registerUndoWithTarget(self, handler: { _ in
-                                self.solitaire.dealCards(self.numberOfCardsToDeal)
-                                self.layoutCards()
-                            })
-                            self.undoManager?.setActionName(" XXX deal cards")
-                        })
-                        undoManager?.setActionName("deal cards")
-                        
-                    } else { // deal one card
-                        let cardLayer = cardToLayerDictionary[card]!
-                        moveCardLayerToTop(cardLayer)
-                        cardLayer.position = wasteLayer.position
-                        cardLayer.faceUp = true
-                        solitaire.didDealCard()
-                        undoManager?.registerUndoWithTarget(self, handler: { _ in
-                            self.solitaire.undoDealCard()
-                            self.layoutCards()
-                        })
-                        undoManager?.setActionName("deal card")
+                        multiCardDeal()
+                    } else {
+                        oneCardDeal()
                     }
                 }
             } else if (layer.name == "stock") {
-                solitaire.collectWasteCardsIntoStock()
-                var z : CGFloat = 1
-                for card in solitaire.stock {
-                    let cardLayer = cardToLayerDictionary[card]!
-                    cardLayer.faceUp = false
-                    cardLayer.frame = stockLayer.frame
-                    cardLayer.zPosition = z++
-                }
+                collectWasteCardsIntoStock()
             }
         }
     }
@@ -353,7 +439,7 @@ class SolitaireView: UIView {
                         draggingCardLayer!.frame = foundationLayers[i].frame
                         solitaire.didDropCard(dragLayer.card, onFoundation: i)
                         draggingCardLayer = nil
-                        // solitaire.dump() // XXXX
+                        undoManager?.removeAllActions() // XXX not undoable for now
                         return // done
                     }
                 }
@@ -379,7 +465,7 @@ class SolitaireView: UIView {
                         draggingCardLayer!.frame = targetFrame
                         solitaire.didDropCard(dragLayer.card, onTableau: i)
                         draggingCardLayer = nil
-                        // solitaire.dump() // XXXX
+                        undoManager?.removeAllActions() // XXX not undoable for now
                         return // done
                     }
                 }
@@ -411,7 +497,7 @@ class SolitaireView: UIView {
                         dragCardsToPosition(position, animate: true)
                         solitaire.didDropFan(fan, onTableau: i)
                         draggingCardLayer = nil
-                        // solitaire.dump() // XXXX
+                        undoManager?.removeAllActions() // XXX not undoable for now
                         return // done
                     }
                 }
@@ -422,7 +508,6 @@ class SolitaireView: UIView {
             //
             dragCardsToPosition(touchStartLayerPosition, animate: true)
             draggingCardLayer = nil
-            // solitaire.dump() // XXXX
         }
     }
 }

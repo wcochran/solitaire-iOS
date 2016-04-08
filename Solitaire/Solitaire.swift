@@ -234,6 +234,10 @@ class Solitaire {
         faceUpCards.insert(card)
     }
     
+    func undoFlipCard(card : Card) {
+        faceUpCards.remove(card)
+    }
+    
     func canDealCard() -> Bool {
         return stock.count > 0
     }
