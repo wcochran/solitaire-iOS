@@ -235,15 +235,18 @@ class SolitaireView: UIView {
                 if solitaire.isCardFaceUp(card) {
                     touchStartPoint = touchPoint
                     touchStartLayerPosition = cardLayer.position
-                    moveCardLayerToTop(cardLayer)
+                    CATransaction.begin()  // do not animate z-position change
+                    CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
+                    cardLayer.zPosition = topZPosition++
                     draggingFan = solitaire.fanBeginningWithCard(card)
                     if let draggingFan = draggingFan {
                         for i in 1 ..< draggingFan.count {
                             let card = draggingFan[i]
                             let clayer = cardToLayerDictionary[card]!
-                            moveCardLayerToTop(clayer)
+                            clayer.zPosition = topZPosition++
                         }
                     }
+                    CATransaction.commit()
                     
                     if touch.tapCount > 1 {
                         if draggingFan == nil || draggingFan!.count <= 1 {
