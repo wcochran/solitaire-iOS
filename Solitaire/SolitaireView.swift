@@ -180,7 +180,7 @@ class SolitaireView: UIView {
     func dragCardsToPosition(position : CGPoint, animate : Bool) {
         if !animate {
             CATransaction.begin()
-            CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
+            CATransaction.setDisableActions(true)
         }
         draggingCardLayer!.position = position
         if let draggingFan = draggingFan {
@@ -199,7 +199,7 @@ class SolitaireView: UIView {
     
     func moveCardLayerToTop(cardLayer : CardLayer) {
         CATransaction.begin()  // do not animate z-position change
-        CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
+        CATransaction.setDisableActions(true)
         cardLayer.zPosition = topZPosition++
         CATransaction.commit()
     }
@@ -242,7 +242,7 @@ class SolitaireView: UIView {
                     touchStartPoint = touchPoint
                     touchStartLayerPosition = cardLayer.position
                     CATransaction.begin()  // do not animate z-position change
-                    CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
+                    CATransaction.setDisableActions(true)
                     cardLayer.zPosition = topZPosition++
                     draggingFan = solitaire.fanBeginningWithCard(card)
                     if let draggingFan = draggingFan {
