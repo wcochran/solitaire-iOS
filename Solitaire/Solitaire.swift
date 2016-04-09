@@ -244,22 +244,6 @@ class Solitaire {
         }
     }
     
-    //
-    // Return stack that card came from (for undo information)
-    //
-    func didDropFanXXX(cards : [Card], onTableau i : Int) -> [Card]{
-        let sourceStack = removeTopCards(cards)  // remove fan from whereever it came
-        tableau[i] += cards
-        return sourceStack!
-    }
-    
-    func undoDropFanXXX(cards : [Card],
-                     inout byMovingItFromStack source : [Card],
-                     inout toStack dest : [Card]) {
-        source.removeLast(cards.count)
-        dest += cards
-    }
-    
     func canFlipCard(card : Card) -> Bool {
         if isCardFaceUp(card) {
             return false
@@ -378,13 +362,13 @@ class Solitaire {
     private func findAndRemoveCardFromStack(card : Card) -> CardStack {
         let cardStack = findCardStackWithCard(card)!
         switch(cardStack) {
-        case CardStack.Waste:
+        case .Waste:
             waste.removeLast()
-        case CardStack.Foundation(let index):
+        case .Foundation(let index):
             foundation[index].removeLast()
-        case CardStack.Tableau(let index):
+        case .Tableau(let index):
             tableau[index].removeLast()
-        case CardStack.Stock:
+        case .Stock:
             stock.removeLast()
         }
         return cardStack
@@ -401,58 +385,6 @@ class Solitaire {
         default: break // shouldn't happen
         }
         return cardStack
-    }
-    
-    //
-    // Find card that is known to be on the top of either
-    // the waste, a foundation stack , or a tableaux and remove it.
-    // We return the card stack it was removed from (for potential undo).
-    //
-//    private func removeTopCard(card : Card) -> [Card]? {
-//        if card == waste.last {
-//            waste.popLast()
-//            return waste
-//        }
-//        for i in 0 ..< 4 {
-//            if card == foundation[i].last {
-//                foundation[i].popLast()
-//                return foundation[i]
-//            }
-//        }
-//        for i in 0 ..< 7 {
-//            if card == tableau[i].last {
-//                tableau[i].popLast()
-//                return tableau[i]
-//            }
-//        }
-//        return nil // this should not happen
-//    }
-    
-    //
-    // Same as removeTopCard, except now we may be moving more than one card.
-    //
-    private func removeTopCards(cards : [Card]) -> [Card]? {
-        let card = cards.last
-        
-        if card == waste.last {
-            waste.removeLast(cards.count)  // count should be 1 in this case
-            return waste
-        }
-        
-        for i in 0 ..< 4 {
-            if card == foundation[i].last {
-                foundation[i].removeLast(cards.count)
-                return foundation[i]
-            }
-        }
-        for i in 0 ..< 7 {
-            if card == tableau[i].last {
-                tableau[i].removeLast(cards.count)
-                return tableau[i]
-            }
-        }
-        
-        return nil  // this should not happen
     }
     
 }
