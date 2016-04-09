@@ -342,7 +342,7 @@ class SolitaireView: UIView {
         let cardHeight = cardLayer.bounds.height
         let fanOffset = FAN_OFFSET*cardHeight
         cardLayer.position = CGPointMake(tableauLayers[i].position.x, tableauLayers[i].position.y + CGFloat(stackCount)*fanOffset)
-        cardLayer.zPosition = topZPosition++        
+        cardLayer.zPosition = topZPosition++
         let cardStack = solitaire.didDropCard(card, onTableau: i)
         
         undoManager?.registerUndoWithTarget(self, handler: {me in
@@ -359,6 +359,14 @@ class SolitaireView: UIView {
             me.dropCard(card, onTableau: i)
         })
         undoManager?.setActionName("drop card on tableau")
+    }
+    
+    func dropFan(cards : [Card], onTableau i : Int) {
+        // XXX
+    }
+    
+    func undoDropFan(cards : [Card], fromStack source: CardStack, onTableau i : Int) {
+        // XXX
     }
 
     
