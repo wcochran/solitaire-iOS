@@ -177,6 +177,29 @@ class SolitaireView: UIView {
         topZPosition = z
     }
     
+    //
+    // Used to move a 'fan' of card from one tableau to another.
+    //
+    func moveCardsToPosition(cards: [Card], position : CGPoint, animate : Bool) {
+        if !animate {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+        }
+        var off : CGFloat = 0
+        for card in cards {
+            let cardLayer = cardToLayerDictionary[card]!
+            cardLayer.position = CGPointMake(position.x, position.y + off)
+            off += FAN_OFFSET*cardLayer.bounds.height
+        }
+        if !animate {
+            CATransaction.commit()
+        }
+    }
+    
+    //
+    // Used while user is dragging cards around.
+    // Uses current 'draggingCardLayer' and 'draggingFan' variables.
+    //
     func dragCardsToPosition(position : CGPoint, animate : Bool) {
         if !animate {
             CATransaction.begin()
@@ -368,7 +391,7 @@ class SolitaireView: UIView {
         let cardHeight = cardLayer.bounds.height
         let fanOffset = FAN_OFFSET*cardHeight
         let position = CGPointMake(tableauLayers[i].position.x, tableauLayers[i].position.y + CGFloat(stackCount)*fanOffset)
-        dragCardsToPosition(position, animate: true)
+        moveCardsToPosition(cards, position: position, animate: true)
         let cardStack = solitaire.didDropFan(cards, onTableau: i)
         
         undoManager?.registerUndoWithTarget(self, handler: { me in

@@ -234,7 +234,7 @@ class Solitaire {
     }
     
     func undoDidDropFan(cards : [Card], fromStack source : CardStack, onTableau i : Int) {
-        tableau[i].removeAtIndex(cards.count)
+        tableau[i].removeLast(cards.count)
         switch(source) {
         case .Foundation(let index):
             foundation[index] += cards;
