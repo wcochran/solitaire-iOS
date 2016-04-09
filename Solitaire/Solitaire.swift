@@ -8,6 +8,13 @@
 
 import Foundation
 
+enum CardStack {
+    case Stock
+    case Waste
+    case Foundation(Int)
+    case Tableau(Int)
+}
+
 class Solitaire {
     var stock : [Card]
     var waste : [Card]
@@ -162,11 +169,31 @@ class Solitaire {
     //
     // Return stack that card came from (for undo information)
     //
-    func didDropCard(card : Card, onFoundation i : Int) -> [Card] {
+    func didDropCard(card : Card, onFoundation i : Int) -> CardStack {
+        let cardStack = findAndRemoveCardFromStack(card)
+        foundation[i].append(card)
+        return cardStack
+    }
+    
+    func undoDidDropCard(card : Card, fromStack source : CardStack, onFoundation i : Int) {
+        let card = foundation[i].popLast()!
+        switch(source) {
+        case .Waste:
+            waste.append(card)
+        case .Foundation(let index):
+            foundation[index].append(card)
+        case .Tableau(let index):
+            tableau[index].append(card)
+        default: break
+        }
+    }
+    
+    func didDropCardXXX(card : Card, onFoundation i : Int) -> [Card] {
         let sourceStack = removeTopCard(card)  // remove card from wherever it came
         foundation[i].append(card)
         return sourceStack!
     }
+
     
     func canDropCard(card : Card, onTableau i : Int) -> Bool {
         if tableau[i].isEmpty {
@@ -180,13 +207,32 @@ class Solitaire {
     //
     // Return stack that card came from (for undo information)
     //
-    func didDropCard(card : Card, onTableau i : Int) -> [Card] {
+    func didDropCard(card : Card, onTableau i : Int) -> CardStack {
+        let cardStack = findAndRemoveCardFromStack(card)
+        tableau[i].append(card)
+        return cardStack
+    }
+   
+    func undoDidDropCard(card : Card, fromStack source : CardStack, onTableau i : Int) {
+        let card = tableau[i].popLast()!
+        switch(source) {
+        case .Waste:
+            waste.append(card)
+        case .Foundation(let index):
+            foundation[index].append(card)
+        case .Tableau(let index):
+            tableau[index].append(card)
+        default: break
+        }
+    }
+    
+    func didDropCardXXX(card : Card, onTableau i : Int) -> [Card] {
         let sourceStack = removeTopCard(card)  // remove card from wherever it came
         tableau[i].append(card)
         return sourceStack!
     }
     
-    func undoDidDropCard(card : Card,
+    func undoDidDropCardXXX(card : Card,
                          inout byMovingItFromStack source : [Card],
                          inout toStack dest : [Card]) {
         dest.append(card)
@@ -306,6 +352,44 @@ class Solitaire {
             cards.forEach {card in print(card.description + ", ", terminator:"")}
             print()
         }
+    }
+    
+    //
+    // Find a card stack with 'card' on top
+    //
+    private func findCardStackWithCard(card : Card) -> CardStack? {
+        if card == waste.last {
+            return CardStack.Waste
+        } else if card == stock.last {
+            return CardStack.Stock
+        } else {
+            for i in 0 ..< 4 {
+                if card == foundation[i].last {
+                    return CardStack.Foundation(i)
+                }
+            }
+            for i in 0 ..< 7 {
+                if card == tableau[i].last {
+                    return CardStack.Tableau(i)
+                }
+            }
+        return nil
+        }
+    }
+    
+    private func findAndRemoveCardFromStack(card : Card) -> CardStack {
+        let cardStack = findCardStackWithCard(card)!
+        switch(cardStack) {
+        case CardStack.Waste:
+            waste.removeLast()
+        case CardStack.Foundation(let index):
+            foundation[index].removeLast()
+        case CardStack.Tableau(let index):
+            tableau[index].removeLast()
+        case CardStack.Stock:
+            stock.removeLast()
+        }
+        return cardStack
     }
     
     //

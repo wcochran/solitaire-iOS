@@ -29,6 +29,7 @@ class ViewController: UIViewController {
             appDelegate.solitaire.freshGame()
             self.solitaireView.collectAllCardsInStock()
             self.solitaireView.layoutCards()
+            self.undoManager?.removeAllActions()
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
         presentViewController(alert, animated: true, completion: nil)

@@ -340,9 +340,61 @@ class SolitaireView: UIView {
 //        }
 //    }
     
-    func moveCard(card : Card, inout fromStack src : [Card], toFoundation i : Int) {
-        solitaire.undoDidDropCard(card, byMovingItFromStack: &src, toStack: &solitaire.foundation[i])
+//    func moveCard(card : Card, inout fromStack src : [Card], toFoundation i : Int) {
+//        solitaire.undoDidDropCard(card, byMovingItFromStack: &src, toStack: &solitaire.foundation[i])
+//    }
+    
+    func dropCard(card : Card, onFoundation i : Int) {
+        let cardLayer = cardToLayerDictionary[card]!
+        cardLayer.zPosition = topZPosition++
+        cardLayer.position = foundationLayers[i].position
+        let cardStack = solitaire.didDropCard(card, onFoundation: i)
+
+        undoManager?.registerUndoWithTarget(self, handler: {me in
+            me.undoDropCard(card, fromStack: cardStack, onFoundation: i)
+        })
+        undoManager?.setActionName("drop card on foundation")
     }
+    
+    func undoDropCard(card: Card, fromStack source: CardStack, onFoundation i : Int) {
+        solitaire.undoDidDropCard(card, fromStack: source, onFoundation: i)
+        layoutCards()
+        
+        undoManager?.registerUndoWithTarget(self, handler: { me in
+            me.dropCard(card, onFoundation: i)
+        })
+        undoManager?.setActionName("drop card on foundation")
+    }
+
+    func dropCard(card : Card, onTableau i : Int) {
+        let cardLayer = cardToLayerDictionary[card]!
+        cardLayer.zPosition = topZPosition++
+        // XXXX NEED TO FIGURE CARD OFFSET HERE
+//        let topCard = solitaire.tableau[i].isEmpty ? nil : solitaire.tableau[i].last
+//        if topCard != nil {
+//            
+//            let cardSize = tableauLayers[i].bounds
+//            let fanOffset = FAN_OFFSET*cardSize.height
+//            targetFrame.origin.y += fanOffset
+//        }
+        let cardStack = solitaire.didDropCard(card, onTableau: i)
+        
+        undoManager?.registerUndoWithTarget(self, handler: {me in
+            me.undoDropCard(card, fromStack: cardStack, onTableau: i)
+        })
+        undoManager?.setActionName("drop card on tableau")
+    }
+    
+    func undoDropCard(card: Card, fromStack source: CardStack, onTableau i : Int) {
+        solitaire.undoDidDropCard(card, fromStack: source, onTableau: i)
+        layoutCards()
+        
+        undoManager?.registerUndoWithTarget(self, handler: { me in
+            me.dropCard(card, onTableau: i)
+        })
+        undoManager?.setActionName("drop card on tableau")
+    }
+
     
     //
     // Note: the point passed to hitTest: is in the coordinate system of
@@ -380,10 +432,7 @@ class SolitaireView: UIView {
                         if draggingFan == nil || draggingFan!.count <= 1 {
                             for i in 0 ..< 4 {
                                 if solitaire.canDropCard(card, onFoundation: i) {
-                                    cardLayer.zPosition = topZPosition++
-                                    cardLayer.position = foundationLayers[i].position
-                                    solitaire.didDropCard(card, onFoundation: i)
-                                    undoManager?.removeAllActions() // XXX not undoable for now
+                                    dropCard(card, onFoundation: i)
                                     break;
                                 }
                             }
@@ -430,16 +479,13 @@ class SolitaireView: UIView {
             let numCards = draggingFan == nil ? 1 : draggingFan!.count
             
             if numCards == 1 { // drop on foundation or tableau
-                
                 //
                 // Drop card on foundation?
                 //
                 for i in 0 ..< 4 {
                     if CGRectIntersectsRect(dragLayer.frame, foundationLayers[i].frame) && solitaire.canDropCard(dragLayer.card, onFoundation: i) {
-                        draggingCardLayer!.frame = foundationLayers[i].frame
-                        solitaire.didDropCard(dragLayer.card, onFoundation: i)
+                        dropCard(dragLayer.card, onFoundation: i)
                         draggingCardLayer = nil
-                        undoManager?.removeAllActions() // XXX not undoable for now
                         return // done
                     }
                 }
@@ -463,12 +509,13 @@ class SolitaireView: UIView {
                             targetFrame.origin.y += fanOffset
                         }
                         draggingCardLayer!.frame = targetFrame
-                        solitaire.didDropCard(dragLayer.card, onTableau: i)
+                        dropCard(dragLayer.card, onTableau: i) // XXXX NEED TO FIGURE CARD IN METHOD
                         draggingCardLayer = nil
                         undoManager?.removeAllActions() // XXX not undoable for now
                         return // done
                     }
                 }
+                
             }  // end numCards == 1
             
             //
