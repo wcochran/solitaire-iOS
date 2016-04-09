@@ -362,11 +362,29 @@ class SolitaireView: UIView {
     }
     
     func dropFan(cards : [Card], onTableau i : Int) {
-        // XXX
+        let card = cards.first!
+        let cardLayer = cardToLayerDictionary[card]!
+        let stackCount = solitaire.tableau[i].count
+        let cardHeight = cardLayer.bounds.height
+        let fanOffset = FAN_OFFSET*cardHeight
+        let position = CGPointMake(tableauLayers[i].position.x, tableauLayers[i].position.y + CGFloat(stackCount)*fanOffset)
+        dragCardsToPosition(position, animate: true)
+        let cardStack = solitaire.didDropFan(cards, onTableau: i)
+        
+        undoManager?.registerUndoWithTarget(self, handler: { me in
+            me.undoDropFan(cards, fromStack: cardStack, onTableau: i)
+        })
+        undoManager?.setActionName("drag fan")
     }
     
     func undoDropFan(cards : [Card], fromStack source: CardStack, onTableau i : Int) {
-        // XXX
+        solitaire.undoDidDropFan(cards, fromStack: source, onTableau: i)
+        layoutCards()
+        
+        undoManager?.registerUndoWithTarget(self, handler: { me in
+            me.dropFan(cards, onTableau: i) // XXX redo blow up
+        })
+        undoManager?.setActionName("drag fan")
     }
 
     
@@ -505,18 +523,8 @@ class SolitaireView: UIView {
                         targetFrame = tableauLayers[i].frame
                     }
                     if CGRectIntersectsRect(dragLayer.frame, targetFrame) && solitaire.canDropFan(fan, onTableau: i) {
-                        let position : CGPoint
-                        if topCard != nil {
-                            let cardSize = targetFrame.size
-                            let fanOffset = FAN_OFFSET*cardSize.height
-                            position = CGPointMake(topCardLayer!.position.x, topCardLayer!.position.y + fanOffset)
-                        } else {
-                            position = tableauLayers[i].position
-                        }
-                        dragCardsToPosition(position, animate: true)
-                        solitaire.didDropFan(fan, onTableau: i)
+                        dropFan(fan, onTableau: i)
                         draggingCardLayer = nil
-                        undoManager?.removeAllActions() // XXX not undoable for now
                         return // done
                     }
                 }
