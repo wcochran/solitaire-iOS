@@ -32,6 +32,17 @@
                                             <action selector="redeal:" destination="BYZ-38-t0r" id="Ky5-hv-G7S"/>
                                         </connections>
                                     </barButtonItem>
+                                    <barButtonItem style="plain" systemItem="flexibleSpace" id="2DN-88-sPc"/>
+                                    <barButtonItem title="undo" id="DdD-Vc-NtS">
+                                        <connections>
+                                            <action selector="undo:" destination="BYZ-38-t0r" id="Alw-fG-1CH"/>
+                                        </connections>
+                                    </barButtonItem>
+                                    <barButtonItem title="redo" id="NFO-y2-8d7">
+                                        <connections>
+                                            <action selector="redo:" destination="BYZ-38-t0r" id="IBd-7q-lsN"/>
+                                        </connections>
+                                    </barButtonItem>
                                 </items>
                                 <variation key="heightClass=compact">
                                     <mask key="constraints">
@@ -70,12 +81,14 @@
                         </variation>
                     </view>
                     <connections>
+                        <outlet property="redoBarButtonItem" destination="NFO-y2-8d7" id="Rip-j9-sOX"/>
                         <outlet property="solitaireView" destination="RIY-M4-RJg" id="eeb-Td-5vO"/>
+                        <outlet property="undoBarButtonItem" destination="DdD-Vc-NtS" id="vNc-5s-OGk"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="341" y="534"/>
+            <point key="canvasLocation" x="236" y="292"/>
         </scene>
     </scenes>
 </document>

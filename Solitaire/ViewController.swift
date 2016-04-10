@@ -15,6 +15,12 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        if let undoManager = undoManager {
+            undoBarButtonItem.enabled = undoManager.canUndo
+            redoBarButtonItem.enabled = undoManager.canRedo
+        }
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -34,6 +40,22 @@ class ViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
         presentViewController(alert, animated: true, completion: nil)
     }
+    
+    func undoManagerCheckpoint(notification : NSNotification) {
+        NSLog("undoManagerCheckpoint")
+        
+    }
 
+    @IBOutlet weak var undoBarButtonItem: UIBarButtonItem!
+    
+    @IBOutlet weak var redoBarButtonItem: UIBarButtonItem!
+    
+    
+    @IBAction func undo(sender: AnyObject) {
+    }
+    
+    @IBAction func redo(sender: AnyObject) {
+    }
+    
 }
 
