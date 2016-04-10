@@ -303,11 +303,7 @@ class SolitaireView: UIView {
         
         let cardLayer = cardToLayerDictionary[card]
         cardLayer!.faceUp = up
-        if (up) {
-            solitaire.didFlipCard(card)
-        } else {
-            solitaire.undoFlipCard(card)
-        }
+        up ? solitaire.didFlipCard(card) : solitaire.undoFlipCard(card)
     }
     
     func collectWasteCardsIntoStock() {

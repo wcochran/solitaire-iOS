@@ -16,10 +16,15 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        if let undoManager = undoManager {
-            undoBarButtonItem.enabled = undoManager.canUndo
-            redoBarButtonItem.enabled = undoManager.canRedo
-        }
+//        if let undoManager = undoManager { // never true?
+//            undoBarButtonItem.enabled = undoManager.canUndo
+//            redoBarButtonItem.enabled = undoManager.canRedo
+//        }
+        
+        undoBarButtonItem.enabled = false
+        redoBarButtonItem.enabled = false
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ViewController.undoManagerCheckpoint(_:)), name: NSUndoManagerCheckpointNotification, object: nil)
         
     }
 
@@ -42,8 +47,10 @@ class ViewController: UIViewController {
     }
     
     func undoManagerCheckpoint(notification : NSNotification) {
-        NSLog("undoManagerCheckpoint")
-        
+        if let undoManager = undoManager {
+            undoBarButtonItem.enabled = undoManager.canUndo
+            redoBarButtonItem.enabled = undoManager.canRedo
+        }
     }
 
     @IBOutlet weak var undoBarButtonItem: UIBarButtonItem!
@@ -52,9 +59,11 @@ class ViewController: UIViewController {
     
     
     @IBAction func undo(sender: AnyObject) {
+        undoManager?.undo()
     }
     
     @IBAction func redo(sender: AnyObject) {
+        undoManager?.redo()
     }
     
 }
