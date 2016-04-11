@@ -220,6 +220,7 @@
 				TargetAttributes = {
 					55263C951CB1892C0075670D = {
 						CreatedOnToolsVersion = 7.3;
+						DevelopmentTeam = RH22UATZY7;
 					};
 					55263CA91CB1892C0075670D = {
 						CreatedOnToolsVersion = 7.3;
@@ -433,7 +434,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = Solitaire/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = edu.wsu.vancouver.Solitaire;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -444,7 +447,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = Solitaire/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = edu.wsu.vancouver.Solitaire;
 				PRODUCT_NAME = "$(TARGET_NAME)";
