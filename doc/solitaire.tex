@@ -299,62 +299,67 @@ override func awakeFromNib() {
 The actual positions and sizes of each layer is determined later
 as described in the next section.
 
-% XXXX
-
 \subsubsection{Table Layout}
 
 The various sublayers are (re)arranged when the orientation
 of the app changes which triggers the 
-view's {\tt layoutSublayersOfLayer:} method.
+view's {\tt layoutSublayersOfLayer:} method:
+\begin{verbatim}
+override func layoutSublayersOfLayer(layer: CALayer) {
+    draggingCardLayer = nil // deactivate any dragging
+    layoutTableAndCards()
+}
+\end{verbatim}
 %The controller determines when the orientation of the app changes
 %and requests that the table layout its sublayers appropriately.
 The view provides a method that determines the size and position
 of each layer based on the current view geometry:
 \begin{verbatim}
--(void)layoutTableAndCards {
-    const CGFloat width = self.frame.size.width;
-    const CGFloat height = self.frame.size.height;
-    const BOOL portrait = width < height;
+func layoutTableAndCards() {
+    let width = bounds.size.width
+    let height = bounds.size.height
+    let portrait = width < height
     
     ... determine size and position of stock, waste, foundation
          and tableau layers ...
     
-    if (self.solitaire != nil)
-        [self layoutCards];
+    layoutCards()
 }
 \end{verbatim}
 The size, position, and z-order of each card layer is computed
 in the method below. The cards in each tableau stack is fanned downwards.
 \begin{verbatim}
--(void)layoutCards {
-    CGFloat z = 1.0;   // card layer z-positions will be set to 1..52
-
-    NSArray *stock = [solitaire stock];
-    for (Card *card in stock) {
-        CardLayer *cardLayer = [cardToLayerDictionary objectForKey:card];
-        cardLayer.frame = stockLayer.frame;
-        cardLayer.faceUp = [solitaire isCardFaceUp:card];
-        cardLayer.zPosition = z++;
+func layoutCards() {
+    var z : CGFloat = 1.0
+      
+    let stock = solitaire.stock
+    for card in stock {
+        let cardLayer = cardToLayerDictionary[card]!
+        cardLayer.frame = stockLayer.frame
+        cardLayer.faceUp = solitaire.isCardFaceUp(card)
+        cardLayer.zPosition = z++
     }
-
+ 
     ... layout cards in waste and foundation stacks ...
     
-    const CGFloat fanOffset = FAN_OFFSET*cardSize.height;
-    for (int i = 0; i < 7; i++) {
-        NSArray *tableau = [solitaire tableau:i];
-        const CGPoint origin = tableauLayers[i].frame.origin;
-        int j = 0;
-        for (Card *card in tableau) {
-            CardLayer *cardLayer = [cardToLayerDictionary objectForKey:card];
-            cardLayer.frame = CGRectMake(origin.x, origin.y + j*fanOffset,
-                                         cardSize.width, cardSize.height);
-            cardLayer.faceUp = [solitaire isCardFaceUp:card];
-            cardLayer.zPosition = z++;
-            j++;
+    let cardSize = stockLayer.bounds.size
+    let fanOffset = FAN_OFFSET * cardSize.height
+    for i in 0 ..< 7 {
+        let tableau = solitaire.tableau[i]
+        let tableauOrigin = tableauLayers[i].frame.origin
+        var j : CGFloat = 0
+        for card in tableau {
+            let cardLayer = cardToLayerDictionary[card]!
+            cardLayer.frame = 
+                CGRectMake(tableauOrigin.x, tableauOrigin.y + j*fanOffset, 
+                           cardSize.width, cardSize.height)
+            cardLayer.faceUp = solitaire.isCardFaceUp(card)
+            cardLayer.zPosition = z++
+            j++
         }
     }
     
-    topZPosition = z;  // remember "highest position"
+    topZPosition = z  // remember "highest position"
 }
 \end{verbatim}
 
@@ -375,34 +380,34 @@ a stack. Other gestures can trigger actions as well:
 Most actions begin on a user touch where we can use 
 {\tt CALayer}'s {\tt hitTest:} method to determine which layer was touched:
 \begin{verbatim}
--(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-    UITouch *touch = [touches anyObject];
-    CGPoint touchPoint = [touch locationInView:self];
-    CGPoint hitTestPoint = [self.layer convertPoint:touchPoint 
-                                            toLayer:self.layer.superlayer];
-    CALayer *layer = [self.layer hitTest:hitTestPoint];
+override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    let touch = touches.first!
+    let touchPoint = touch.locationInView(self)
+    let hitTestPoint = self.layer.convertPoint(touchPoint, toLayer: self.layer.superlayer)
+    let layer = self.layer.hitTest(hitTestPoint)
+        
+    if let layer = layer {
+        if layer.name == "card" {
+            let cardLayer = layer as! CardLayer
+            let card = cardLayer.card
+            if solitaire.isCardFaceUp(card) {
+                ...if tap count > 1 move to foundation if allowed...
+                ...else initiate drag of card (or stack of cards) by setting
+                   draggingCardLayer, and (possibly) draggingFan...
 
-    if (layer == nil) return; // can this happen?
 
-    if ([layer.name isEqual:@"card"]) {
-        CardLayer *cardLayer = (CardLayer*) layer;
-        Card *card = cardLayer.card;
-        if ([self.solitaire isCardFaceUp:card]) {
-           ...if tap count > 1 move to foundation if allowed...
-           ...else initiate drag of card (or stack of cards) by setting
-              draggingCardLayer, and (possibly) draggingFan...
-        } else if ([self.solitaire canFlipCard:card]) {
-            [cardLayer setFaceUp:YES];
-            [self.solitaire didFlipCard:card];
-        } else if ([[[self.solitaire stock] lastObject] isEqual:card]) {        
-           ...deal card(s) from stock to waste..
+            } else if solitaire.canFlipCard(card) {
+                flipCard(card, faceUp: true)
+            } else if solitaire.stock.last == card {
+                dealCardsFromStockToWaste();
+            } 
+        } else if (layer.name == "stock") {
+             collectWasteCardsIntoStock()
         }
-     } else if ([layer.name isEqual:@"stock"]) {
-          [self.solitaire collectWasteCardsIntoStock];
-          ...flip and move waste card layers back to stock...
-     }
+    }
 }
 \end{verbatim}
+% XXXX
 The following method is used to drag or move a {\tt CardLayer} (or a fanned stack of
 {\tt CardLayer's}). The instance variables
 {\tt draggingCardLayer} and {\tt draggingFan} are set
