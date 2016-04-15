@@ -7,7 +7,7 @@
 
 \title{Klondike Solitaire}
 \author{CS 458}
-\date{Due 11:59 pm, May XX, 2016}
+\date{Due 11:59 pm, Wednesday May 4, 2016}
 
 \begin{document}
 \maketitle
@@ -394,10 +394,8 @@ override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
                 ...if tap count > 1 move to foundation if allowed...
                 ...else initiate drag of card (or stack of cards) by setting
                    draggingCardLayer, and (possibly) draggingFan...
-
-
             } else if solitaire.canFlipCard(card) {
-                flipCard(card, faceUp: true)
+                flipCard(card, faceUp: true) // update model & view
             } else if solitaire.stock.last == card {
                 dealCardsFromStockToWaste();
             } 
@@ -407,7 +405,6 @@ override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
     }
 }
 \end{verbatim}
-% XXXX
 The following method is used to drag or move a {\tt CardLayer} (or a fanned stack of
 {\tt CardLayer's}). The instance variables
 {\tt draggingCardLayer} and {\tt draggingFan} are set
@@ -418,25 +415,24 @@ While the user is dragging cards
 we want to disable animation, 
 but otherwise we animate the change of position:
 \begin{verbatim}
--(void)dragCardsToPosition:(CGPoint)position animate:(BOOL)animate {
-  if (!animate) {
-    [CATransaction begin];
-    [CATransaction setValue:(id)kCFBooleanTrue
-                   forKey:kCATransactionDisableActions];
-  }
-  draggingCardLayer.position = position;
-  if (draggingFan != nil) {
-    const CGFloat off = FAN_OFFSET*draggingCardLayer.bounds.size.height;
-    const int n = [draggingFan count];
-    for (int i = 1; i < n; i++) {
-      CardLayer *clayer =
-        [cardToLayerDictionary objectForKey:[draggingFan objectAtIndex:i]];
-      clayer.position = CGPointMake(position.x, position.y + i*off);
+func dragCardsToPosition(position : CGPoint, animate : Bool) {
+    if !animate {
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
     }
-  }
-  if (!animate) {
-    [CATransaction commit];
-  }
+    draggingCardLayer!.position = position
+    if let draggingFan = draggingFan {
+        let off = FAN_OFFSET*draggingCardLayer!.bounds.size.height
+        let n = draggingFan.count
+        for i in 1 ..< n {
+            let card = draggingFan[i]
+            let cardLayer = cardToLayerDictionary[card]!
+            cardLayer.position = CGPointMake(position.x, position.y + CGFloat(i)*off)
+        }
+    }
+    if !animate {
+        CATransaction.commit()
+    }
 }
 \end{verbatim}
 For example, if the user drops a fan of cards in a bogus location, we can
@@ -457,9 +453,9 @@ When a touch sequence ends we need to do the following:
 \item If the drop is {\em not} okay, then the card(s) need to moved back
 \end{enumerate}
 \begin{verbatim}
--(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (draggingCardLayer) {
-       if (dragging only one card) {
+override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    if let dragLayer = draggingCardLayer {
+       if dragging only one card {
           ... determine where the user is trying to drop the card
           ... determine if this is a valid/legal drop
              ... if so, update model and view
@@ -469,22 +465,65 @@ When a touch sequence ends we need to do the following:
             ... if so, update model and view
             ... else put cards back from whence they came
        }
-       draggingCardLayer = nil;
+       draggingCardLayer = nil
     }
 }
 \end{verbatim}
 
 \section{Other Bells and Whistles} \label{sec:bells-and-whistles}
 
-\subsection{Persistant Store}
+\subsection{Persistent Store}
 
 When the app enters the background, the state of the model should
-be saved in the app's sandbox. If the {\tt Solitaire} class (and the
-{\tt Card} class) conform to the {\tt NSCoding} protocol, 
-the archiving technique discussed in class works well.
+be saved in the app's sandbox. 
+Note that my {\tt Card} type is a Swift {\tt struct} (not a {\tt class})
+and thus can not conform to the {\tt NSCoding} protocol for archival purposes.
+Instead I allow {\tt Card}'s to be created/saved from/to a {\em property
+list} (plist) compatible dictionary:
+\begin{verbatim}
+struct Card : Hashable {
+    let suit : Suit
+    let rank : UInt8 // 1 .. 13
+    ...
+    init(dictionary dict : [String : AnyObject]) { // to retrieve from plist
+        suit = Suit(rawValue: (dict["suit"] as! NSNumber).unsignedCharValue)!
+        rank = (dict["rank"] as! NSNumber).unsignedCharValue
+    }
+    
+    func toDictionary() -> [String : AnyObject] { // to store in plist
+        return [
+            "suit" : NSNumber(unsignedChar: suit.rawValue),
+            "rank" : NSNumber(unsignedChar: rank)
+        ]
+    }
+    ...    
+ }   
+\end{verbatim}
+Similarly I allow my {\tt Solitaire} model class to be persistently stored
+as a plist:
+\begin{verbatim}
+class Solitaire {
+    var stock : [Card]
+    var waste : [Card]
+    var foundation : [[Card]]
+    var tableau : [[Card]]
+    private var faceUpCards : Set<Card>;
+    ...
+    init(dictionary dict : [String : AnyObject]) { // for retrieving from plist
+       ...
+    }
+    
+    func toDictionary() -> [String : AnyObject] {  // for storing in plist
+       ...
+    }
+}
+\end{verbatim}
+When the app enters the background state, save the game's state
+as a plist in the app's sandbox.
 When the app is launched, check to see if the state of the
-previous run has been saved; If so, decode the archive,
-otherwise start a new (random) game.
+previous run has been saved; If so, load the model state from
+the plist stored in the app's sandbox,
+otherwise create a new (random) game.
 
 \subsection{Animating the deal}
 
@@ -497,19 +536,26 @@ place each dealt card persists!
 
 \subsection{Undo}
 
-Having one level of undo is a nice feature (more than this tempts
-the user to cheat). To accomplish this you need to
-record the appropriate set of actions that undo the most
-recent action. These actions can be stored in
-an instance of {\tt NSInvocation} 
--- this is actually a bit of work!
+%Having one level of undo is a nice feature (more than this tempts
+%the user to cheat). 
+Allowing the user to undo (and redo) actions is a nice feature (but
+maybe encourages cheating).
+To accomplish this you need to
+record the appropriate set of actions that undo (and redo) the
+recent actions. You might not realize it, but your app already has
+an {\tt undoManager} property that is an instance of
+{\tt NSUndoManager} that handles a lot of this machinery.
+In fact, it is already wired to respond to a shake gesture if you
+make your view a first responder.
+Recording all the necessary actions is a bit of work -- see your textbook
+on undo manager (or come talk to me) if you are really interested.
 
 \subsection{Party when the user wins!}
 
 The user should get some sort of visual ``pay off'' when
 (s)he wins. A cool card animation might be the ticket.
 
-\section{Finishing up}
+\subsection{Finishing up}
 
 Polishing the final app and following the steps needed
 for submission to the iTune's store is worth practicing.
