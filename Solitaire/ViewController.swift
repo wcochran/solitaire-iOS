@@ -21,10 +21,10 @@ class ViewController: UIViewController {
 //            redoBarButtonItem.enabled = undoManager.canRedo
 //        }
         
-        undoBarButtonItem.enabled = false
-        redoBarButtonItem.enabled = false
+        undoBarButtonItem.isEnabled = false
+        redoBarButtonItem.isEnabled = false
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ViewController.undoManagerCheckpoint(_:)), name: NSUndoManagerCheckpointNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(ViewController.undoManagerCheckpoint(_:)), name: NSNotification.Name.NSUndoManagerCheckpoint, object: nil)
         
     }
 
@@ -33,38 +33,38 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
-    @IBAction func redeal(sender: AnyObject) {
-        let alert = UIAlertController(title: "New Game?", message: "Redeal cards?", preferredStyle: .Alert)
-        alert.addAction(UIAlertAction(title: "Redeal", style: .Destructive, handler: {
+    @IBAction func redeal(_ sender: AnyObject) {
+        let alert = UIAlertController(title: "New Game?", message: "Redeal cards?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Redeal", style: .destructive, handler: {
             [unowned self] action in
-            let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+            let appDelegate = UIApplication.shared.delegate as! AppDelegate
             appDelegate.solitaire.freshGame()
             self.solitaireView.collectAllCardsInStock()
             self.solitaireView.layoutCards()
             self.undoManager?.removeAllActions() // does *not* trigger NSUndoManagerCheckpointNotification
-            self.undoBarButtonItem.enabled = false
-            self.redoBarButtonItem.enabled = false
+            self.undoBarButtonItem.isEnabled = false
+            self.redoBarButtonItem.isEnabled = false
         }))
-        alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
-        presentViewController(alert, animated: true, completion: nil)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(alert, animated: true, completion: nil)
     }
     
     @IBOutlet weak var undoBarButtonItem: UIBarButtonItem!
     
     @IBOutlet weak var redoBarButtonItem: UIBarButtonItem!
     
-    func undoManagerCheckpoint(notification : NSNotification) {
+    func undoManagerCheckpoint(_ notification : Notification) {
         if let undoManager = undoManager {
-            undoBarButtonItem.enabled = undoManager.canUndo
-            redoBarButtonItem.enabled = undoManager.canRedo
+            undoBarButtonItem.isEnabled = undoManager.canUndo
+            redoBarButtonItem.isEnabled = undoManager.canRedo
         }
     }
     
-    @IBAction func undo(sender: AnyObject) {
+    @IBAction func undo(_ sender: AnyObject) {
         undoManager?.undo()
     }
     
-    @IBAction func redo(sender: AnyObject) {
+    @IBAction func redo(_ sender: AnyObject) {
         undoManager?.redo()
     }
     

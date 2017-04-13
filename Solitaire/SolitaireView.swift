@@ -23,11 +23,11 @@ class SolitaireView: UIView {
     
     var draggingCardLayer : CardLayer? = nil // card layer dragged (nil => no drag)
     var draggingFan : [Card]? = nil  // fan of cards dragged
-    var touchStartPoint : CGPoint = CGPointZero
-    var touchStartLayerPosition : CGPoint = CGPointZero
+    var touchStartPoint : CGPoint = CGPoint.zero
+    var touchStartLayerPosition : CGPoint = CGPoint.zero
     
     lazy var solitaire : Solitaire!  = { // reference to model in app delegate
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
         return appDelegate.solitaire
     }()
     let numberOfCardsToDeal = 3
@@ -37,12 +37,12 @@ class SolitaireView: UIView {
         
         stockLayer = CALayer()
         stockLayer.name = "stock"
-        stockLayer.backgroundColor = UIColor(colorLiteralRed: 0.0, green: 0.5, blue: 0.0, alpha: 0.3).CGColor
+        stockLayer.backgroundColor = UIColor(colorLiteralRed: 0.0, green: 0.5, blue: 0.0, alpha: 0.3).cgColor
         self.layer.addSublayer(stockLayer)
         
         wasteLayer = CALayer()
         wasteLayer.name = "waste"
-        wasteLayer.backgroundColor = UIColor(colorLiteralRed: 0.0, green: 0.5, blue: 0.0, alpha: 0.3).CGColor
+        wasteLayer.backgroundColor = UIColor(colorLiteralRed: 0.0, green: 0.5, blue: 0.0, alpha: 0.3).cgColor
         self.layer.addSublayer(wasteLayer)
         
         let foundationColor = UIColor(colorLiteralRed: 0.0, green: 0.0, blue: 0.5, alpha: 0.3)
@@ -50,7 +50,7 @@ class SolitaireView: UIView {
         for i in 0 ..< 4 {
             let foundationLayer = CALayer();
             foundationLayer.name = "foundation \(i)"
-            foundationLayer.backgroundColor = foundationColor.CGColor
+            foundationLayer.backgroundColor = foundationColor.cgColor
             self.layer.addSublayer(foundationLayer)
             foundationLayers.append(foundationLayer)
         }
@@ -60,7 +60,7 @@ class SolitaireView: UIView {
         for i in 0 ..< 7 {
             let tableauLayer = CALayer();
             tableauLayer.name = "tableau \(i)"
-            tableauLayer.backgroundColor = tableauColor.CGColor
+            tableauLayer.backgroundColor = tableauColor.cgColor
             self.layer.addSublayer(tableauLayer)
             tableauLayers.append(tableauLayer)
         }
@@ -77,7 +77,7 @@ class SolitaireView: UIView {
         becomeFirstResponder() // for shake -> triggers undo
     }
     
-    override func canBecomeFirstResponder() -> Bool {
+    override var canBecomeFirstResponder : Bool {
         return true // for shake -> triggers undo
     }
     
@@ -94,19 +94,19 @@ class SolitaireView: UIView {
         let cardWidth = (width - 2*horzMargin - 6*cardSpacing)/7
         let cardHeight = cardWidth / CARDASPECT
         
-        stockLayer.frame = CGRectMake(horzMargin, vertMargin, cardWidth, cardHeight)
-        wasteLayer.frame = CGRectMake(horzMargin + cardSpacing + cardWidth, vertMargin, cardWidth, cardHeight)
+        stockLayer.frame = CGRect(x: horzMargin, y: vertMargin, width: cardWidth, height: cardHeight)
+        wasteLayer.frame = CGRect(x: horzMargin + cardSpacing + cardWidth, y: vertMargin, width: cardWidth, height: cardHeight)
         
         var x = width - horzMargin - cardWidth
-        for i in (0...3).reverse() {
-            foundationLayers[i].frame = CGRectMake(x, vertMargin, cardWidth, cardHeight)
+        for i in (0...3).reversed() {
+            foundationLayers[i].frame = CGRect(x: x, y: vertMargin, width: cardWidth, height: cardHeight)
             x -= cardSpacing + cardWidth
         }
         
         x = horzMargin
         let y = vertMargin + cardHeight + tableauSpacing
         for i in 0 ..< 7 {
-            tableauLayers[i].frame = CGRectMake(x, y, cardWidth, cardHeight)
+            tableauLayers[i].frame = CGRect(x: x, y: y, width: cardWidth, height: cardHeight)
             x += cardSpacing + cardWidth
         }
         
@@ -121,7 +121,8 @@ class SolitaireView: UIView {
             let cardLayer = cardToLayerDictionary[card]!
             cardLayer.frame = stockLayer.frame
             cardLayer.faceUp = solitaire.isCardFaceUp(card)
-            cardLayer.zPosition = z++
+            cardLayer.zPosition = z
+            z = z + 1
         }
         
         let waste = solitaire.waste
@@ -129,7 +130,8 @@ class SolitaireView: UIView {
             let cardLayer = cardToLayerDictionary[card]!
             cardLayer.frame = wasteLayer.frame
             cardLayer.faceUp = solitaire.isCardFaceUp(card)
-            cardLayer.zPosition = z++
+            cardLayer.zPosition = z
+            z = z + 1
         }
         
         for i in 0 ..< 4 {
@@ -138,7 +140,8 @@ class SolitaireView: UIView {
                 let cardLayer = cardToLayerDictionary[card]!
                 cardLayer.frame = foundationLayers[i].frame
                 cardLayer.faceUp = solitaire.isCardFaceUp(card)
-                cardLayer.zPosition = z++
+                cardLayer.zPosition = z
+                z = z + 1
             }
         }
         
@@ -150,17 +153,19 @@ class SolitaireView: UIView {
             var j : CGFloat = 0
             for card in tableau {
                 let cardLayer = cardToLayerDictionary[card]!
-                cardLayer.frame = CGRectMake(tableauOrigin.x, tableauOrigin.y + j*fanOffset, cardSize.width, cardSize.height)
+                cardLayer.frame = CGRect(x: tableauOrigin.x, y: tableauOrigin.y + j*fanOffset, width: cardSize.width, height: cardSize.height)
                 cardLayer.faceUp = solitaire.isCardFaceUp(card)
-                cardLayer.zPosition = z++
-                j++
+                cardLayer.zPosition = z
+                z = z + 1
+                j = j + 1
             }
         }
         
         topZPosition = z
     }
     
-    override func layoutSublayersOfLayer(layer: CALayer) {
+    
+    override func layoutSublayers(of layer: CALayer) {
         draggingCardLayer = nil // deactivate any dragging
         layoutTableAndCards()
     }
@@ -171,7 +176,8 @@ class SolitaireView: UIView {
             let cardLayer = cardToLayerDictionary[card]!
             cardLayer.faceUp = false
             cardLayer.frame = stockLayer.frame
-            cardLayer.zPosition = z++
+            cardLayer.zPosition = z
+            z = z + 1
         }
         draggingCardLayer = nil
         topZPosition = z
@@ -180,13 +186,14 @@ class SolitaireView: UIView {
     //
     // Used to move a 'fan' of card from one tableau to another.
     //
-    func moveCardsToPosition(cards: [Card], position : CGPoint, animate : Bool) {
+    func moveCardsToPosition(_ cards: [Card], position : CGPoint, animate : Bool) {
         
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         for card in cards {
             let cardLayer = cardToLayerDictionary[card]!
-            cardLayer.zPosition = topZPosition++
+            cardLayer.zPosition = topZPosition
+            topZPosition = topZPosition + 1
         }
         CATransaction.commit()
         
@@ -198,7 +205,7 @@ class SolitaireView: UIView {
         var off : CGFloat = 0
         for card in cards {
             let cardLayer = cardToLayerDictionary[card]!
-            cardLayer.position = CGPointMake(position.x, position.y + off)
+            cardLayer.position = CGPoint(x: position.x, y: position.y + off)
             off += FAN_OFFSET*cardLayer.bounds.height
         }
         if !animate {
@@ -211,7 +218,7 @@ class SolitaireView: UIView {
     // Uses current 'draggingCardLayer' and 'draggingFan' variables.
     // z-positions should already be above all other card layers.
     //
-    func dragCardsToPosition(position : CGPoint, animate : Bool) {
+    func dragCardsToPosition(_ position : CGPoint, animate : Bool) {
         if !animate {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
@@ -223,7 +230,7 @@ class SolitaireView: UIView {
             for i in 1 ..< n {
                 let card = draggingFan[i]
                 let cardLayer = cardToLayerDictionary[card]!
-                cardLayer.position = CGPointMake(position.x, position.y + CGFloat(i)*off)
+                cardLayer.position = CGPoint(x: position.x, y: position.y + CGFloat(i)*off)
             }
         }
         if !animate {
@@ -231,17 +238,18 @@ class SolitaireView: UIView {
         }
     }
     
-    func moveCardLayerToTop(cardLayer : CardLayer) {
+    func moveCardLayerToTop(_ cardLayer : CardLayer) {
         CATransaction.begin()  // do not animate z-position change
         CATransaction.setDisableActions(true)
-        cardLayer.zPosition = topZPosition++
+        cardLayer.zPosition = topZPosition
+        topZPosition = topZPosition + 1
         CATransaction.commit()
     }
     
-    func animateDeal(inout cardLayers : [CardLayer]) {
+    func animateDeal(_ cardLayers : inout [CardLayer]) {
         if cardLayers.count > 0 {
             let cardLayer = cardLayers[0]
-            cardLayers.removeAtIndex(0)
+            cardLayers.remove(at: 0)
             
             moveCardLayerToTop(cardLayer)
             
@@ -259,7 +267,7 @@ class SolitaireView: UIView {
     func multiCardDeal() {
         let cards = solitaire.dealCards(numberOfCardsToDeal)
         
-        undoManager?.registerUndoWithTarget(self, handler: { me in
+        undoManager?.registerUndo(withTarget: self, handler: { me in
             me.undoMultiCard(cards)
         })
         undoManager?.setActionName("deal cards")
@@ -272,8 +280,8 @@ class SolitaireView: UIView {
         animateDeal(&cardLayers)
     }
     
-    func undoMultiCard(cards : [Card]) {
-        undoManager?.registerUndoWithTarget(self, handler: { me in
+    func undoMultiCard(_ cards : [Card]) {
+        undoManager?.registerUndo(withTarget: self, handler: { me in
             me.multiCardDeal()
         })
         undoManager?.setActionName("deal cards")
@@ -283,7 +291,7 @@ class SolitaireView: UIView {
     }
     
     func oneCardDeal() {
-        undoManager?.registerUndoWithTarget(self, handler: {me in
+        undoManager?.registerUndo(withTarget: self, handler: {me in
             me.undoOneCardDeal()
         })
         undoManager?.setActionName("deal card")
@@ -297,7 +305,7 @@ class SolitaireView: UIView {
     }
     
     func undoOneCardDeal() {
-        undoManager?.registerUndoWithTarget(self, handler: {me in
+        undoManager?.registerUndo(withTarget: self, handler: {me in
             me.oneCardDeal()
         })
         undoManager?.setActionName("deal card")
@@ -306,8 +314,8 @@ class SolitaireView: UIView {
         self.layoutCards()
     }
     
-    func flipCard(card : Card, faceUp up : Bool) {
-        undoManager?.registerUndoWithTarget(self, handler: {me in
+    func flipCard(_ card : Card, faceUp up : Bool) {
+        undoManager?.registerUndo(withTarget: self, handler: {me in
             me.flipCard(card, faceUp: !up)
         })
         undoManager?.setActionName("flip card")
@@ -318,7 +326,7 @@ class SolitaireView: UIView {
     }
     
     func collectWasteCardsIntoStock() {
-        undoManager?.registerUndoWithTarget(self, handler: {me in
+        undoManager?.registerUndo(withTarget: self, handler: {me in
             me.undoCollectWasteCardsIntoStock()
         })
         undoManager?.setActionName("collect waste cards")
@@ -329,12 +337,13 @@ class SolitaireView: UIView {
             let cardLayer = cardToLayerDictionary[card]!
             cardLayer.faceUp = false
             cardLayer.frame = stockLayer.frame
-            cardLayer.zPosition = z++
+            cardLayer.zPosition = z
+            z = z + 1
         }
     }
     
     func undoCollectWasteCardsIntoStock() {
-        undoManager?.registerUndoWithTarget(self, handler: {me in
+        undoManager?.registerUndo(withTarget: self, handler: {me in
             me.collectWasteCardsIntoStock()
         })
         undoManager?.setActionName("collect waste cards")
@@ -344,74 +353,74 @@ class SolitaireView: UIView {
     }
     
     
-    func dropCard(card : Card, onFoundation i : Int) {
+    func dropCard(_ card : Card, onFoundation i : Int) {
         let cardLayer = cardToLayerDictionary[card]!
         moveCardLayerToTop(cardLayer)
         cardLayer.position = foundationLayers[i].position
         let cardStack = solitaire.didDropCard(card, onFoundation: i)
 
-        undoManager?.registerUndoWithTarget(self, handler: {me in
+        undoManager?.registerUndo(withTarget: self, handler: {me in
             me.undoDropCard(card, fromStack: cardStack, onFoundation: i)
         })
         undoManager?.setActionName("drop card on foundation")
     }
     
-    func undoDropCard(card: Card, fromStack source: CardStack, onFoundation i : Int) {
+    func undoDropCard(_ card: Card, fromStack source: CardStack, onFoundation i : Int) {
         solitaire.undoDidDropCard(card, fromStack: source, onFoundation: i)
         layoutCards()
         
-        undoManager?.registerUndoWithTarget(self, handler: { me in
+        undoManager?.registerUndo(withTarget: self, handler: { me in
             me.dropCard(card, onFoundation: i)
         })
         undoManager?.setActionName("drop card on foundation")
     }
 
-    func dropCard(card : Card, onTableau i : Int) {
+    func dropCard(_ card : Card, onTableau i : Int) {
         let cardLayer = cardToLayerDictionary[card]!
         let stackCount = solitaire.tableau[i].count
         let cardHeight = cardLayer.bounds.height
         let fanOffset = FAN_OFFSET*cardHeight
         moveCardLayerToTop(cardLayer)
-        cardLayer.position = CGPointMake(tableauLayers[i].position.x, tableauLayers[i].position.y + CGFloat(stackCount)*fanOffset)
+        cardLayer.position = CGPoint(x: tableauLayers[i].position.x, y: tableauLayers[i].position.y + CGFloat(stackCount)*fanOffset)
         let cardStack = solitaire.didDropCard(card, onTableau: i)
         
-        undoManager?.registerUndoWithTarget(self, handler: {me in
+        undoManager?.registerUndo(withTarget: self, handler: {me in
             me.undoDropCard(card, fromStack: cardStack, onTableau: i)
         })
         undoManager?.setActionName("drop card on tableau")
     }
     
-    func undoDropCard(card: Card, fromStack source: CardStack, onTableau i : Int) {
+    func undoDropCard(_ card: Card, fromStack source: CardStack, onTableau i : Int) {
         solitaire.undoDidDropCard(card, fromStack: source, onTableau: i)
         layoutCards()
         
-        undoManager?.registerUndoWithTarget(self, handler: { me in
+        undoManager?.registerUndo(withTarget: self, handler: { me in
             me.dropCard(card, onTableau: i)
         })
         undoManager?.setActionName("drop card on tableau")
     }
     
-    func dropFan(cards : [Card], onTableau i : Int) {
+    func dropFan(_ cards : [Card], onTableau i : Int) {
         let card = cards.first!
         let cardLayer = cardToLayerDictionary[card]!
         let stackCount = solitaire.tableau[i].count
         let cardHeight = cardLayer.bounds.height
         let fanOffset = FAN_OFFSET*cardHeight
-        let position = CGPointMake(tableauLayers[i].position.x, tableauLayers[i].position.y + CGFloat(stackCount)*fanOffset)
+        let position = CGPoint(x: tableauLayers[i].position.x, y: tableauLayers[i].position.y + CGFloat(stackCount)*fanOffset)
         moveCardsToPosition(cards, position: position, animate: true)
         let cardStack = solitaire.didDropFan(cards, onTableau: i)
         
-        undoManager?.registerUndoWithTarget(self, handler: { me in
+        undoManager?.registerUndo(withTarget: self, handler: { me in
             me.undoDropFan(cards, fromStack: cardStack, onTableau: i)
         })
         undoManager?.setActionName("drag fan")
     }
     
-    func undoDropFan(cards : [Card], fromStack source: CardStack, onTableau i : Int) {
+    func undoDropFan(_ cards : [Card], fromStack source: CardStack, onTableau i : Int) {
         solitaire.undoDidDropFan(cards, fromStack: source, onTableau: i)
         layoutCards()
         
-        undoManager?.registerUndoWithTarget(self, handler: { me in
+        undoManager?.registerUndo(withTarget: self, handler: { me in
             me.dropFan(cards, onTableau: i) // XXX redo blow up
         })
         undoManager?.setActionName("drag fan")
@@ -424,10 +433,10 @@ class SolitaireView: UIView {
     // http://goo.gl/FIzjZD
     //
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         let touch = touches.first!
-        let touchPoint = touch.locationInView(self)
-        let hitTestPoint = self.layer.convertPoint(touchPoint, toLayer: self.layer.superlayer)
+        let touchPoint = touch.location(in: self)
+        let hitTestPoint = self.layer.convert(touchPoint, to: self.layer.superlayer)
         let layer = self.layer.hitTest(hitTestPoint)
         
         if let layer = layer {
@@ -439,13 +448,15 @@ class SolitaireView: UIView {
                     touchStartLayerPosition = cardLayer.position
                     CATransaction.begin()  // do not animate z-position change
                     CATransaction.setDisableActions(true)
-                    cardLayer.zPosition = topZPosition++
+                    cardLayer.zPosition = topZPosition
+                    topZPosition = topZPosition + 1
                     draggingFan = solitaire.fanBeginningWithCard(card)
                     if let draggingFan = draggingFan {
                         for i in 1 ..< draggingFan.count {
                             let card = draggingFan[i]
                             let clayer = cardToLayerDictionary[card]!
-                            clayer.zPosition = topZPosition++
+                            clayer.zPosition = topZPosition
+                            topZPosition = topZPosition + 1
                         }
                     }
                     CATransaction.commit()
@@ -478,25 +489,25 @@ class SolitaireView: UIView {
         }
     }
     
-    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         if draggingCardLayer != nil {
             let touch = touches.first!
-            let p = touch.locationInView(self)
-            let delta = CGPointMake(p.x - touchStartPoint.x, p.y - touchStartPoint.y)
-            let position = CGPointMake(touchStartLayerPosition.x + delta.x,
-                                       touchStartLayerPosition.y + delta.y)
+            let p = touch.location(in: self)
+            let delta = CGPoint(x: p.x - touchStartPoint.x, y: p.y - touchStartPoint.y)
+            let position = CGPoint(x: touchStartLayerPosition.x + delta.x,
+                                       y: touchStartLayerPosition.y + delta.y)
             dragCardsToPosition(position, animate: false)
         }
     }
     
-    override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         if draggingCardLayer != nil {
             dragCardsToPosition(touchStartLayerPosition, animate: true)
             draggingCardLayer = nil
         }
     }
     
-    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let dragLayer = draggingCardLayer {
             let numCards = draggingFan == nil ? 1 : draggingFan!.count
             
@@ -505,7 +516,7 @@ class SolitaireView: UIView {
                 // Drop card on foundation?
                 //
                 for i in 0 ..< 4 {
-                    if CGRectIntersectsRect(dragLayer.frame, foundationLayers[i].frame) && solitaire.canDropCard(dragLayer.card, onFoundation: i) {
+                    if dragLayer.frame.intersects(foundationLayers[i].frame) && solitaire.canDropCard(dragLayer.card, onFoundation: i) {
                         dropCard(dragLayer.card, onFoundation: i)
                         draggingCardLayer = nil
                         return // done
@@ -524,7 +535,7 @@ class SolitaireView: UIView {
                     } else {
                         targetFrame = tableauLayers[i].frame
                     }
-                    if CGRectIntersectsRect(dragLayer.frame, targetFrame) && solitaire.canDropCard(dragLayer.card, onTableau: i) {
+                    if dragLayer.frame.intersects(targetFrame) && solitaire.canDropCard(dragLayer.card, onTableau: i) {
                         if topCard != nil {
                             let cardSize = targetFrame.size
                             let fanOffset = FAN_OFFSET*cardSize.height
@@ -552,7 +563,7 @@ class SolitaireView: UIView {
                     } else {
                         targetFrame = tableauLayers[i].frame
                     }
-                    if CGRectIntersectsRect(dragLayer.frame, targetFrame) && solitaire.canDropFan(fan, onTableau: i) {
+                    if dragLayer.frame.intersects(targetFrame) && solitaire.canDropFan(fan, onTableau: i) {
                         dropFan(fan, onTableau: i)
                         draggingCardLayer = nil
                         return // done

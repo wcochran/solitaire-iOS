@@ -9,10 +9,10 @@
 import Foundation
 
 enum Suit : UInt8 {
-    case SPADES = 0
-    case CLUBS  = 1
-    case DIAMONDS = 2
-    case HEARTS = 3
+    case spades = 0
+    case clubs  = 1
+    case diamonds = 2
+    case hearts = 3
 }
 
 
@@ -49,26 +49,26 @@ struct Card : Hashable {
     }
     
     init(dictionary dict : [String : AnyObject]) { // to retrieve from plist
-        suit = Suit(rawValue: (dict["suit"] as! NSNumber).unsignedCharValue)!
-        rank = (dict["rank"] as! NSNumber).unsignedCharValue
+        suit = Suit(rawValue: (dict["suit"] as! NSNumber).uint8Value)!
+        rank = (dict["rank"] as! NSNumber).uint8Value
     }
     
     func toDictionary() -> [String : AnyObject] { // to store in plist
         return [
-            "suit" : NSNumber(unsignedChar: suit.rawValue),
-            "rank" : NSNumber(unsignedChar: rank)
+            "suit" : NSNumber(value: suit.rawValue as UInt8),
+            "rank" : NSNumber(value: rank as UInt8)
         ]
     }
     
     func isBlack() -> Bool {
-        return suit == Suit.SPADES || suit == Suit.CLUBS
+        return suit == Suit.spades || suit == Suit.clubs
     }
     
     func isRed() -> Bool {
         return !isBlack()
     }
     
-    func isSameColor(other : Card) -> Bool {
+    func isSameColor(_ other : Card) -> Bool {
         return isBlack() ? other.isBlack() : other.isRed()
     }
     

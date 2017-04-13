@@ -9,10 +9,10 @@
 import Foundation
 
 enum CardStack {
-    case Stock
-    case Waste
-    case Foundation(Int)
-    case Tableau(Int)
+    case stock
+    case waste
+    case foundation(Int)
+    case tableau(Int)
 }
 
 class Solitaire {
@@ -21,7 +21,7 @@ class Solitaire {
     var foundation : [[Card]]
     var tableau : [[Card]]
     
-    private var faceUpCards : Set<Card>;
+    fileprivate var faceUpCards : Set<Card>;
     
     init() {
         stock = Card.deck()
@@ -76,7 +76,7 @@ class Solitaire {
         ]
     }
     
-    func isCardFaceUp(card : Card) -> Bool {
+    func isCardFaceUp(_ card : Card) -> Bool {
         return faceUpCards.contains(card)
     }
     
@@ -140,7 +140,7 @@ class Solitaire {
         dealCardsFromStockToTableaux()
     }
     
-    func fanBeginningWithCard(card : Card) -> [Card]? {
+    func fanBeginningWithCard(_ card : Card) -> [Card]? {
         for i in 0 ..< 7 {
             let cards = tableau[i]
             let numCards = cards.count
@@ -157,7 +157,7 @@ class Solitaire {
         return nil
     }
     
-    func canDropCard(card : Card, onFoundation i : Int) -> Bool {
+    func canDropCard(_ card : Card, onFoundation i : Int) -> Bool {
         if foundation[i].isEmpty {
             return card.rank == ACE
         } else {
@@ -169,26 +169,26 @@ class Solitaire {
     //
     // Return stack that card came from (for undo information)
     //
-    func didDropCard(card : Card, onFoundation i : Int) -> CardStack {
+    func didDropCard(_ card : Card, onFoundation i : Int) -> CardStack {
         let cardStack = findAndRemoveCardFromStack(card)
         foundation[i].append(card)
         return cardStack
     }
     
-    func undoDidDropCard(card : Card, fromStack source : CardStack, onFoundation i : Int) {
+    func undoDidDropCard(_ card : Card, fromStack source : CardStack, onFoundation i : Int) {
         let card = foundation[i].popLast()!
         switch(source) {
-        case .Waste:
+        case .waste:
             waste.append(card)
-        case .Foundation(let index):
+        case .foundation(let index):
             foundation[index].append(card)
-        case .Tableau(let index):
+        case .tableau(let index):
             tableau[index].append(card)
         default: break
         }
     }
     
-    func canDropCard(card : Card, onTableau i : Int) -> Bool {
+    func canDropCard(_ card : Card, onTableau i : Int) -> Bool {
         if tableau[i].isEmpty {
             return card.rank == KING
         } else {
@@ -200,51 +200,51 @@ class Solitaire {
     //
     // Return stack that card came from (for undo information)
     //
-    func didDropCard(card : Card, onTableau i : Int) -> CardStack {
+    func didDropCard(_ card : Card, onTableau i : Int) -> CardStack {
         let cardStack = findAndRemoveCardFromStack(card)
         tableau[i].append(card)
         return cardStack
     }
    
-    func undoDidDropCard(card : Card, fromStack source : CardStack, onTableau i : Int) {
+    func undoDidDropCard(_ card : Card, fromStack source : CardStack, onTableau i : Int) {
         let card = tableau[i].popLast()!
         switch(source) {
-        case .Waste:
+        case .waste:
             waste.append(card)
-        case .Foundation(let index):
+        case .foundation(let index):
             foundation[index].append(card)
-        case .Tableau(let index):
+        case .tableau(let index):
             tableau[index].append(card)
         default: break
         }
     }
     
 
-    func canDropFan(cards : [Card], onTableau i : Int) -> Bool {
+    func canDropFan(_ cards : [Card], onTableau i : Int) -> Bool {
         if let card = cards.first {
             return canDropCard(card, onTableau: i)
         }
         return false;
     }
  
-    func didDropFan(cards : [Card], onTableau i : Int) -> CardStack {
+    func didDropFan(_ cards : [Card], onTableau i : Int) -> CardStack {
         let cardStack = findAndRemoveCardFanFromStack(cards)
         tableau[i] += cards
         return cardStack
     }
     
-    func undoDidDropFan(cards : [Card], fromStack source : CardStack, onTableau i : Int) {
+    func undoDidDropFan(_ cards : [Card], fromStack source : CardStack, onTableau i : Int) {
         tableau[i].removeLast(cards.count)
         switch(source) {
-        case .Foundation(let index):
+        case .foundation(let index):
             foundation[index] += cards;
-        case .Tableau(let index):
+        case .tableau(let index):
             tableau[index] += cards
         default: break
         }
     }
     
-    func canFlipCard(card : Card) -> Bool {
+    func canFlipCard(_ card : Card) -> Bool {
         if isCardFaceUp(card) {
             return false
         } else {
@@ -258,11 +258,11 @@ class Solitaire {
         return false
     }
     
-    func didFlipCard(card : Card) {
+    func didFlipCard(_ card : Card) {
         faceUpCards.insert(card)
     }
     
-    func undoFlipCard(card : Card) {
+    func undoFlipCard(_ card : Card) {
         faceUpCards.remove(card)
     }
     
@@ -287,7 +287,7 @@ class Solitaire {
     // Returns cards actually dealt (so view can animate them, and
     // we home many cards were dealt for an undo).
     //
-    func dealCards(num : Int) -> [Card] {
+    func dealCards(_ num : Int) -> [Card] {
         var cards : [Card] = []
         let max = min(stock.count, num)
         for _ in 0 ..< max {
@@ -299,7 +299,7 @@ class Solitaire {
         return cards
     }
     
-    func undoDealCards(num : Int) {
+    func undoDealCards(_ num : Int) {
         for _ in 0 ..< num {
             let card = waste.popLast()!
             faceUpCards.remove(card)
@@ -324,12 +324,12 @@ class Solitaire {
         print("waste:")
         waste.forEach {card in print(card.description + ", ", terminator:"")}
         print()
-        for (i, cards) in foundation.enumerate() {
+        for (i, cards) in foundation.enumerated() {
             print("foundation[\(i)]:")
             cards.forEach {card in print(card.description + ", ", terminator:"")}
             print()
         }
-        for (i, cards) in tableau.enumerate() {
+        for (i, cards) in tableau.enumerated() {
             print("tableau[\(i)]:")
             cards.forEach {card in print(card.description + ", ", terminator:"")}
             print()
@@ -339,48 +339,48 @@ class Solitaire {
     //
     // Find a card stack with 'card' on top
     //
-    private func findCardStackWithCard(card : Card) -> CardStack? {
+    fileprivate func findCardStackWithCard(_ card : Card) -> CardStack? {
         if card == waste.last {
-            return CardStack.Waste
+            return CardStack.waste
         } else if card == stock.last {
-            return CardStack.Stock
+            return CardStack.stock
         } else {
             for i in 0 ..< 4 {
                 if card == foundation[i].last {
-                    return CardStack.Foundation(i)
+                    return CardStack.foundation(i)
                 }
             }
             for i in 0 ..< 7 {
                 if card == tableau[i].last {
-                    return CardStack.Tableau(i)
+                    return CardStack.tableau(i)
                 }
             }
         return nil
         }
     }
     
-    private func findAndRemoveCardFromStack(card : Card) -> CardStack {
+    fileprivate func findAndRemoveCardFromStack(_ card : Card) -> CardStack {
         let cardStack = findCardStackWithCard(card)!
         switch(cardStack) {
-        case .Waste:
+        case .waste:
             waste.removeLast()
-        case .Foundation(let index):
+        case .foundation(let index):
             foundation[index].removeLast()
-        case .Tableau(let index):
+        case .tableau(let index):
             tableau[index].removeLast()
-        case .Stock:
+        case .stock:
             stock.removeLast()
         }
         return cardStack
     }
     
-    private func findAndRemoveCardFanFromStack(cards : [Card]) -> CardStack {
+    fileprivate func findAndRemoveCardFanFromStack(_ cards : [Card]) -> CardStack {
         let card = cards.last!
         let cardStack = findCardStackWithCard(card)!
         switch(cardStack) {
-        case .Foundation(let index):
+        case .foundation(let index):
             foundation[index].removeLast(cards.count)
-        case .Tableau(let index):
+        case .tableau(let index):
             tableau[index].removeLast(cards.count)
         default: break // shouldn't happen
         }

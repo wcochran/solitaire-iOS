@@ -8,7 +8,7 @@
 
 import UIKit
 
-func imageForCard(card : Card) -> UIImage {
+func imageForCard(_ card : Card) -> UIImage {
     let suits = [
         "spades", "clubs", "diamonds", "hearts"
     ]
@@ -16,7 +16,7 @@ func imageForCard(card : Card) -> UIImage {
         "", "a", "2", "3", "4", "5", "6", "7", "8", "9", "10", "j", "q", "k"
     ]
     let imageName = "150/\(suits[Int(card.suit.rawValue)])-\(ranks[Int(card.rank)])-150.png"
-    let image = UIImage(named: imageName, inBundle: nil, compatibleWithTraitCollection: nil)!
+    let image = UIImage(named: imageName, in: nil, compatibleWith: nil)!
     return image
 }
 
@@ -26,19 +26,19 @@ class CardLayer: CALayer {
         didSet {
             if faceUp != oldValue {
                 let image = faceUp ? frontImage : CardLayer.backImage
-                self.contents = image?.CGImage
+                self.contents = image?.cgImage
             }
         }
     }
     let frontImage : UIImage
-    static let backImage = UIImage(named: "150/back-blue-150-1.png", inBundle: nil, compatibleWithTraitCollection: nil)
+    static let backImage = UIImage(named: "150/back-blue-150-1.png", in: nil, compatibleWith: nil)
     
     init(card : Card) {
         self.card = card
         faceUp = true
         frontImage = imageForCard(card)
         super.init()
-        self.contents = frontImage.CGImage
+        self.contents = frontImage.cgImage
         self.contentsGravity = kCAGravityResizeAspect
     }
     
@@ -48,18 +48,18 @@ class CardLayer: CALayer {
     // See the docs:
     //  https://developer.apple.com/library/mac/documentation/GraphicsImaging/Reference/CALayer_class/#//apple_ref/occ/instm/CALayer/initWithLayer:
     //
-    override init(layer: AnyObject) {
+    override init(layer: Any) {
         if let layer = layer as? CardLayer {
             card = layer.card
             faceUp = layer.faceUp
             frontImage = layer.frontImage
         } else {
-            card = Card(suit: Suit.SPADES, rank: ACE)
+            card = Card(suit: Suit.spades, rank: ACE)
             faceUp = true
             frontImage = imageForCard(card)
         }
         super.init(layer: layer)
-        self.contents = frontImage.CGImage
+        self.contents = frontImage.cgImage
         self.contentsGravity = kCAGravityResizeAspect
     }
     
@@ -69,7 +69,7 @@ class CardLayer: CALayer {
     // http://www.edwardhuynh.com/blog/2015/02/16/swift-initializer-confusion/
     //
     required init?(coder aDecoder: NSCoder) {
-        card = Card(suit: Suit.SPADES, rank: ACE)
+        card = Card(suit: Suit.spades, rank: ACE)
         faceUp = true
         frontImage = imageForCard(card)
         super.init(coder: aDecoder)
