@@ -246,8 +246,9 @@ class SolitaireView: UIView {
         CATransaction.commit()
     }
     
-    func animateDeal(_ cardLayers : inout [CardLayer]) {
-        if cardLayers.count > 0 {
+  func animateDeal( _ cardLayers : [CardLayer]) {
+    var cardLayers = cardLayers
+    if cardLayers.count > 0 {
             let cardLayer = cardLayers[0]
             cardLayers.remove(at: 0)
             
@@ -255,7 +256,7 @@ class SolitaireView: UIView {
             
             CATransaction.begin()
             CATransaction.setCompletionBlock {
-                self.animateDeal(&cardLayers)
+                self.animateDeal(cardLayers)
             }
             CATransaction.setAnimationDuration(0.25)
             cardLayer.faceUp = true
@@ -277,7 +278,7 @@ class SolitaireView: UIView {
             let clayer = cardToLayerDictionary[c]!
             cardLayers.append(clayer)
         }
-        animateDeal(&cardLayers)
+        animateDeal(cardLayers)
     }
     
     func undoMultiCard(_ cards : [Card]) {

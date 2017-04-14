@@ -68,11 +68,11 @@ class Solitaire {
         }
         let faceUpCardsArray = faceUpCards.map{$0.toDictionary()}
         return [
-            "stock" : stockArray,
-            "waste" : wasteArray,
-            "foundation" : foundationArray,
-            "tableau" : tableauArray,
-            "faceUpCards" : faceUpCardsArray
+            "stock" : stockArray as NSArray,
+            "waste" : wasteArray as NSArray,
+            "foundation" : foundationArray as NSArray,
+            "tableau" : tableauArray as NSArray,
+            "faceUpCards" : faceUpCardsArray as NSArray
         ]
     }
     
