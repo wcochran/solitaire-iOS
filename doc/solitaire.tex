@@ -7,7 +7,7 @@
 
 \title{Klondike Solitaire}
 \author{CS 458}
-\date{Due 11:59 pm, Wednesday May 4, 2016}
+\date{Due 11:59 pm, Wednesday May 3, 2017}
 
 \begin{document}
 \maketitle
@@ -83,10 +83,10 @@ as illustrated in Figure~\ref{fig:card-table}:
 \begin{center}
 \begin{verbatim}
 enum Suit : UInt8 {
-    case SPADES = 0
-    case CLUBS  = 1
-    case DIAMONDS = 2
-    case HEARTS = 3
+    case spades = 0
+    case clubs  = 1
+    case diamonds = 2
+    case hearts = 3
 }
 
 let ACE   : UInt8 = 1
@@ -99,7 +99,7 @@ func ==(left: Card, right: Card) -> Bool {
 }
 
 struct Card : Hashable {
-    let suit : Suit  // .SPADES ... .HEARTS 
+    let suit : Suit  // .spades ... .hearts
     let rank : UInt8 // 1 ... 13
     
     var hashValue: Int {
@@ -138,23 +138,23 @@ class which has the following interface:
 %\item{\tt -(NSArray*)waste;} Face up card in waste.
 %\item{\tt -(NSArray*)foundation:(int)i;} Cards on foundation $0 \leq i < 4.$ 
 %\item{\tt -(NSArray*)tableau:(int)i;} Cards on tableau $0 \leq i < 7.$ 
-\item{\verb@func isCardFaceUp(card : Card) -> Bool@} Is given card face up? 
-\item{\verb@func fanBeginningWithCard(card : Card) -> [Card]?@} Array of face up
+\item{\verb@func isCardFaceUp(_ card : Card) -> Bool@} Is given card face up? 
+\item{\verb@func fanBeginningWithCard(_ card : Card) -> [Card]?@} Array of face up
    cards found stacked on top of one of the tableau's. 
-\item{\verb@func canDropCard(card : Card, onFoundation i : Int) -> Bool@}  Can the given
+\item{\verb@func canDropCard(_ card : Card, onFoundation i : Int) -> Bool@}  Can the given
   cards be legally dropped on the $i$th foundation?
-\item{\verb@func didDropCard(card : Card, onFoundation i : Int)@} The user did drop
+\item{\verb@func didDropCard(_ card : Card, onFoundation i : Int)@} The user did drop
   the given card on on the $i$th foundation.
-\item{\verb@func canDropCard(card : Card, onTableau i : Int) -> Bool;@} Can the given card
+\item{\verb@func canDropCard(_ card : Card, onTableau i : Int) -> Bool;@} Can the given card
   be legally dropped on the $i$th tableau?
-\item{\verb@func didDropCard(card : Card, onTableau i : Int)@} The user did drop
+\item{\verb@func didDropCard(_ card : Card, onTableau i : Int)@} The user did drop
   the card on the on the $i$th tableau.
-\item{\verb@func canDropFan(cards : [Card], onTableau i : Int) -> Bool@} Can the given 
+\item{\verb@func canDropFan(_ cards : [Card], onTableau i : Int) -> Bool@} Can the given 
   stack of cards be legally dropped on the $i$ tableau?
-\item{\verb@func didDropFan(cards : [Card], onTableau i : Int)@} A stack of
+\item{\verb@func didDropFan(_ cards : [Card], onTableau i : Int)@} A stack of
   cards has been dropped in the $i$th tableau.
-\item{\verb@func canFlipCard(card : Card) -> Bool@} Can user legally flip the card over?
-\item{\verb@func didFlipCard(card : Card)@} The user did flip the card over.
+\item{\verb@func canFlipCard(_ card : Card) -> Bool@} Can user legally flip the card over?
+\item{\verb@func didFlipCard(_ card : Card)@} The user did flip the card over.
 \item{\verb@func canDealCard() -> Bool@} Can user move top card from stock to waste?
 \item{\verb@func didDealCard()@} Uses did move the top stack card to the waste.
 \item{\verb@func collectWasteCardsIntoStock()@} Move all waste cards back to
@@ -180,10 +180,9 @@ class Solitaire {
     var foundation : [[Card]]  // Array of 4 card stacks
     var tableau : [[Card]]     // Array of 7 card stacks
     
-    private var faceUpCards : Set<Card>;
+    fileprivate var faceUpCards : Set<Card>;
     ...
 }
-@end
 \end{verbatim}
 
 \section{The View Elements} \label{sec:view}
@@ -256,16 +255,15 @@ class SolitaireView: UIView {
     
     var draggingCardLayer : CardLayer? = nil // card layer dragged (nil => no drag)
     var draggingFan : [Card]? = nil          // fan of cards dragged
-    var touchStartPoint : CGPoint = CGPointZero
-    var touchStartLayerPosition : CGPoint = CGPointZero
+    var touchStartPoint : CGPoint = CGPoint.zero
+    var touchStartLayerPosition : CGPoint = CGPoint.zero
     
     lazy var solitaire : Solitaire!  = { // reference to model in app delegate
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
         return appDelegate.solitaire
     }()
     ...
  }
-@end
 \end{verbatim}
 
 \subsubsection{Initializing the View}
@@ -281,7 +279,7 @@ override func awakeFromNib() {
     stockLayer = CALayer()
     stockLayer.name = "stock"
     stockLayer.backgroundColor = 
-        UIColor(colorLiteralRed: 0.0, green: 0.5, blue: 0.0, alpha: 0.3).CGColor
+        UIColor(colorLiteralRed: 0.0, green: 0.5, blue: 0.0, alpha: 0.3).cgColor
     self.layer.addSublayer(stockLayer)
     
     ... create and add waste, foundation, and tableau sublayers ...
@@ -305,7 +303,7 @@ The various sublayers are (re)arranged when the orientation
 of the app changes which triggers the 
 view's {\tt layoutSublayersOfLayer:} method:
 \begin{verbatim}
-override func layoutSublayersOfLayer(layer: CALayer) {
+override func layoutSublayers(of layer: CALayer) {
     draggingCardLayer = nil // deactivate any dragging
     layoutTableAndCards()
 }
@@ -337,7 +335,7 @@ func layoutCards() {
         let cardLayer = cardToLayerDictionary[card]!
         cardLayer.frame = stockLayer.frame
         cardLayer.faceUp = solitaire.isCardFaceUp(card)
-        cardLayer.zPosition = z++
+        cardLayer.zPosition = z; z = z + 1
     }
  
     ... layout cards in waste and foundation stacks ...
@@ -354,8 +352,8 @@ func layoutCards() {
                 CGRectMake(tableauOrigin.x, tableauOrigin.y + j*fanOffset, 
                            cardSize.width, cardSize.height)
             cardLayer.faceUp = solitaire.isCardFaceUp(card)
-            cardLayer.zPosition = z++
-            j++
+            cardLayer.zPosition = z; z = z + 1
+            j = j + 1
         }
     }
     
@@ -427,7 +425,7 @@ func dragCardsToPosition(position : CGPoint, animate : Bool) {
         for i in 1 ..< n {
             let card = draggingFan[i]
             let cardLayer = cardToLayerDictionary[card]!
-            cardLayer.position = CGPointMake(position.x, position.y + CGFloat(i)*off)
+            cardLayer.position = CGPoint(x: position.x, y: position.y + CGFloat(i)*off)
         }
     }
     if !animate {
@@ -486,14 +484,14 @@ struct Card : Hashable {
     let rank : UInt8 // 1 .. 13
     ...
     init(dictionary dict : [String : AnyObject]) { // to retrieve from plist
-        suit = Suit(rawValue: (dict["suit"] as! NSNumber).unsignedCharValue)!
-        rank = (dict["rank"] as! NSNumber).unsignedCharValue
+        suit = Suit(rawValue: (dict["suit"] as! NSNumber).uint8Value)!
+        rank = (dict["rank"] as! NSNumber).uint8Value
     }
     
     func toDictionary() -> [String : AnyObject] { // to store in plist
         return [
-            "suit" : NSNumber(unsignedChar: suit.rawValue),
-            "rank" : NSNumber(unsignedChar: rank)
+            "suit" : NSNumber(value: suit.rawValue as UInt8),
+            "rank" : NSNumber(value: rank as UInt8)
         ]
     }
     ...    
