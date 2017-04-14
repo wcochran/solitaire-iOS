@@ -114,6 +114,8 @@ class SolitaireView: UIView {
     }
     
     func layoutCards() {
+        self.isUserInteractionEnabled = false
+        
         var z : CGFloat = 1.0
         
         let stock = solitaire.stock
@@ -162,6 +164,8 @@ class SolitaireView: UIView {
         }
         
         topZPosition = z
+        
+        self.isUserInteractionEnabled = true
     }
     
     
@@ -171,6 +175,7 @@ class SolitaireView: UIView {
     }
     
     func collectAllCardsInStock() {
+        self.isUserInteractionEnabled = false
         var z : CGFloat = 1
         for card in cardToLayerDictionary.keys {
             let cardLayer = cardToLayerDictionary[card]!
@@ -181,6 +186,7 @@ class SolitaireView: UIView {
         }
         draggingCardLayer = nil
         topZPosition = z
+        self.isUserInteractionEnabled = true
     }
     
     //
@@ -246,9 +252,11 @@ class SolitaireView: UIView {
         CATransaction.commit()
     }
     
-  func animateDeal( _ cardLayers : [CardLayer]) {
-    var cardLayers = cardLayers
-    if cardLayers.count > 0 {
+    func animateDeal( _ cardLayers : [CardLayer]) {
+        var cardLayers = cardLayers
+        if cardLayers.count > 0 {
+            self.isUserInteractionEnabled = false
+            
             let cardLayer = cardLayers[0]
             cardLayers.remove(at: 0)
             
@@ -262,9 +270,11 @@ class SolitaireView: UIView {
             cardLayer.faceUp = true
             cardLayer.position = wasteLayer.position
             CATransaction.commit()
+        } else {
+            self.isUserInteractionEnabled = true
         }
     }
-    
+  
     func multiCardDeal() {
         let cards = solitaire.dealCards(numberOfCardsToDeal)
         
@@ -334,6 +344,7 @@ class SolitaireView: UIView {
         
         solitaire.collectWasteCardsIntoStock()
         var z : CGFloat = 1
+        self.isUserInteractionEnabled = false
         for card in solitaire.stock {
             let cardLayer = cardToLayerDictionary[card]!
             cardLayer.faceUp = false
@@ -341,6 +352,7 @@ class SolitaireView: UIView {
             cardLayer.zPosition = z
             z = z + 1
         }
+        self.isUserInteractionEnabled = true
     }
     
     func undoCollectWasteCardsIntoStock() {
