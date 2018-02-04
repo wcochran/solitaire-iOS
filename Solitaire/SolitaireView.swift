@@ -37,15 +37,15 @@ class SolitaireView: UIView {
         
         stockLayer = CALayer()
         stockLayer.name = "stock"
-        stockLayer.backgroundColor = UIColor(colorLiteralRed: 0.0, green: 0.5, blue: 0.0, alpha: 0.3).cgColor
+        stockLayer.backgroundColor = UIColor(red: 0.0, green: 0.5, blue: 0.0, alpha: 0.3).cgColor
         self.layer.addSublayer(stockLayer)
         
         wasteLayer = CALayer()
         wasteLayer.name = "waste"
-        wasteLayer.backgroundColor = UIColor(colorLiteralRed: 0.0, green: 0.5, blue: 0.0, alpha: 0.3).cgColor
+        wasteLayer.backgroundColor = UIColor(red: 0.0, green: 0.5, blue: 0.0, alpha: 0.3).cgColor
         self.layer.addSublayer(wasteLayer)
         
-        let foundationColor = UIColor(colorLiteralRed: 0.0, green: 0.0, blue: 0.5, alpha: 0.3)
+        let foundationColor = UIColor(red: 0.0, green: 0.0, blue: 0.5, alpha: 0.3)
         foundationLayers = []
         for i in 0 ..< 4 {
             let foundationLayer = CALayer();
@@ -55,7 +55,7 @@ class SolitaireView: UIView {
             foundationLayers.append(foundationLayer)
         }
         
-        let tableauColor = UIColor(colorLiteralRed: 0.0, green: 0.0, blue: 0.5, alpha: 0.3)
+        let tableauColor = UIColor(red: 0.0, green: 0.0, blue: 0.5, alpha: 0.3)
         tableauLayers = []
         for i in 0 ..< 7 {
             let tableauLayer = CALayer();
