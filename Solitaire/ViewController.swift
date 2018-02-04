@@ -53,7 +53,7 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var redoBarButtonItem: UIBarButtonItem!
     
-    func undoManagerCheckpoint(_ notification : Notification) {
+    @objc func undoManagerCheckpoint(_ notification : Notification) {
         if let undoManager = undoManager {
             undoBarButtonItem.isEnabled = undoManager.canUndo
             redoBarButtonItem.isEnabled = undoManager.canRedo
